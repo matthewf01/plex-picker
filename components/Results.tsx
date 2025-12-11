@@ -13,6 +13,7 @@ type SortOption = 'match' | 'imdb' | 'rt' | 'year' | 'length';
 
 export const Results: React.FC<ResultsProps> = ({ recommendations, selection, onReset, serverIdentifier }) => {
   const [sortBy, setSortBy] = useState<SortOption>('match');
+  const [selectedPick, setSelectedPick] = useState<Recommendation | null>(null);
 
   const topPick = recommendations[0];
   let others = recommendations.slice(1);
@@ -65,6 +66,13 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
     return v;
   }
 
+  const getSearchUrl = (site: 'imdb' | 'rt', title: string) => {
+    const query = encodeURIComponent(title);
+    if (site === 'imdb') return `https://www.imdb.com/find?q=${query}`;
+    if (site === 'rt') return `https://www.rottentomatoes.com/search?search=${query}`;
+    return '#';
+  };
+
   // Generate Deep Link
   // https://app.plex.tv/desktop/#!/server/{serverID}/details?key={key}
   const getPlexLink = (key: string) => {
@@ -91,33 +99,33 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-6 py-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+    <div className="w-full max-w-5xl mx-auto px-4 md:px-6 pt-4 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
       
       {/* Search Context Bar */}
-      <div className="flex flex-col items-center justify-center mb-10 space-y-2">
-         <div className="text-xs uppercase tracking-[0.2em] text-gray-500">Picked For You</div>
-         <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-sm md:text-lg">
+      <div className="flex flex-col items-center justify-center mb-6 space-y-2 w-full">
+         <div className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-500">Picked For You</div>
+         <div className="flex flex-wrap items-center justify-center gap-2 w-full">
             {/* Cyan for Format */}
-            <span className="font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-500/20 px-4 py-1 rounded-full">
+            <span className="font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-500/20 px-2 md:px-4 py-1 rounded-full text-xs md:text-sm whitespace-nowrap">
               {getFormatLabel(selection?.type)}
             </span>
-            <span className="text-gray-600">•</span>
+            <span className="text-gray-600 hidden md:inline">•</span>
             
             {/* Emerald for History */}
-            <span className="font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-4 py-1 rounded-full">
+            <span className="font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-2 md:px-4 py-1 rounded-full text-xs md:text-sm whitespace-nowrap">
               {getHistoryLabel(selection?.history)}
             </span>
-            <span className="text-gray-600">•</span>
+            <span className="text-gray-600 hidden md:inline">•</span>
             
             {/* Orange for Vibe */}
-            <span className="font-bold text-orange-400 bg-orange-950/40 border border-orange-500/20 px-4 py-1 rounded-full">
+            <span className="font-bold text-orange-400 bg-orange-950/40 border border-orange-500/20 px-2 md:px-4 py-1 rounded-full text-xs md:text-sm whitespace-nowrap">
               {getVibeLabel(selection?.vibe)}
             </span>
          </div>
       </div>
 
       {/* Top Pick Header & Context */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
         <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors order-2 md:order-1">
           ← Back to Decoder
         </button>
@@ -129,7 +137,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       </div>
 
       {/* Main Feature */}
-      <div className="grid md:grid-cols-12 gap-8 mb-16 bg-plex-slate/20 p-6 rounded-3xl border border-white/5 relative overflow-hidden">
+      <div className="grid md:grid-cols-12 gap-8 mb-8 bg-plex-slate/20 p-6 rounded-3xl border border-white/5 relative overflow-hidden">
         {/* Background Blur Effect */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-plex-orange/5 blur-[100px] rounded-full pointer-events-none -mr-20 -mt-20"></div>
 
@@ -184,14 +192,26 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
           {/* Ratings & Metadata */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
              {topPick.imdbRating && (
-               <span className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs flex items-center gap-1" title="IMDb Rating">
+               <a 
+                 href={getSearchUrl('imdb', topPick.item.title)} 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
+                 title="View on IMDb"
+               >
                  IMDb {topPick.imdbRating}
-               </span>
+               </a>
              )}
              {topPick.rottenTomatoesScore && (
-               <span className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs flex items-center gap-1" title="Rotten Tomatoes">
-                 {topPick.rottenTomatoesScore}
-               </span>
+               <a 
+                 href={getSearchUrl('rt', topPick.item.title)}
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
+                 title="View on Rotten Tomatoes"
+               >
+                 RT {topPick.rottenTomatoesScore}
+               </a>
              )}
             <span className="w-1 h-1 bg-gray-600 rounded-full mx-1"></span>
             <span className="text-xs font-medium uppercase tracking-wider text-gray-300">
@@ -223,7 +243,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
 
       {/* Alternatives with Sorting */}
       {others.length > 0 && (
-        <div className="border-t border-white/10 pt-10">
+        <div className="border-t border-white/10 pt-8 mt-4">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <h3 className="text-xl font-display font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-0">More Picks</h3>
             
@@ -246,41 +266,48 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
 
           <div className="grid md:grid-cols-2 gap-6">
             {others.map((rec) => (
-              <div key={rec.item.ratingKey} className="flex gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group relative">
-                {/* Deep Link Wrapper */}
-                {serverIdentifier && (
-                    <a 
-                      href={getPlexLink(rec.item.key)} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="absolute inset-0 z-20"
-                      aria-label={`Watch ${rec.item.title} on Plex`}
-                    ></a>
-                )}
-                
-                <div className="w-20 aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
+              <div 
+                key={rec.item.ratingKey} 
+                className="flex gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group relative cursor-pointer"
+              >
+                 {/* Click Target for Card -> Modal */}
+                <div className="absolute inset-0 z-0" onClick={() => setSelectedPick(rec)}></div>
+
+                <div className="w-20 aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative pointer-events-none">
                   {rec.item.thumb && <img src={rec.item.thumb} alt={rec.item.title} className="w-full h-full object-cover" />}
-                  {/* Mini Rating on Thumbnail */}
-                  {rec.imdbRating && (
-                     <div className="absolute bottom-0 right-0 bg-[#f5c518] text-black text-[10px] font-bold px-1 z-10">
-                        {rec.imdbRating}
-                     </div>
-                  )}
-                  {/* Play Overlay on Hover */}
+                  
+                  {/* View Details Overlay on Hover */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                       <svg className="w-8 h-8 text-plex-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pointer-events-none">
                   <div className="flex justify-between items-start">
                     <h4 className="font-bold text-lg text-white group-hover:text-plex-orange transition-colors truncate pr-2">{rec.item.title}</h4>
                     <span className="text-xs text-gray-500 font-mono whitespace-nowrap">{rec.item.year}</span>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-sm mb-2 mt-1">
+                  <div className="flex items-center gap-3 text-sm mb-2 mt-1 flex-wrap pointer-events-auto relative z-10">
                      <span className="text-plex-orange font-bold whitespace-nowrap">{rec.score}% Match</span>
                      {rec.imdbRating && (
-                        <span className="text-[#f5c518] font-bold text-xs whitespace-nowrap">IMDb {rec.imdbRating}</span>
+                        <a 
+                          href={getSearchUrl('imdb', rec.item.title)} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-[#f5c518] font-bold text-xs whitespace-nowrap hover:underline"
+                        >
+                          IMDb {rec.imdbRating}
+                        </a>
+                     )}
+                     {rec.rottenTomatoesScore && (
+                       <a 
+                         href={getSearchUrl('rt', rec.item.title)} 
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         className="text-[#fa320a] font-bold text-xs whitespace-nowrap hover:underline"
+                       >
+                         RT {rec.rottenTomatoesScore}
+                       </a>
                      )}
                      <span className="text-gray-500 text-xs whitespace-nowrap">• {formatDuration(rec.item.duration)}</span>
                   </div>
@@ -293,7 +320,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       )}
 
       {/* Support / Donate Card */}
-      <div className="mt-20 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-8 text-center relative overflow-hidden group">
+      <div className="mt-10 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-8 text-center relative overflow-hidden group">
          <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
          <p className="text-gray-400 mb-6 relative z-10">If PlexPicker helped you decide what to watch tonight, please support MY next movie night!</p>
@@ -340,6 +367,97 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
             </a>
          </div>
       </div>
+
+      {/* DETAILS MODAL */}
+      {selectedPick && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+           <div 
+             className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+             onClick={() => setSelectedPick(null)}
+           ></div>
+           
+           <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row overflow-hidden">
+               <button 
+                 onClick={() => setSelectedPick(null)}
+                 className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors"
+               >
+                 ✕
+               </button>
+
+               {/* Poster Side */}
+               <div className="w-full md:w-2/5 relative h-64 md:h-auto">
+                 {selectedPick.item.thumb ? (
+                   <img src={selectedPick.item.thumb} alt={selectedPick.item.title} className="w-full h-full object-cover" />
+                 ) : (
+                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">No Poster</div>
+                 )}
+               </div>
+               
+               {/* Details Side */}
+               <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col">
+                  <div className="mb-1">
+                    <h2 className="text-3xl font-display font-bold text-white leading-tight">{selectedPick.item.title}</h2>
+                    <div className="text-gray-400 text-sm mt-1">{selectedPick.item.year} • {selectedPick.item.type === 'show' ? 'TV Series' : 'Movie'} • {formatDuration(selectedPick.item.duration)}</div>
+                  </div>
+
+                  {/* Ratings */}
+                  <div className="flex gap-3 my-4">
+                     {selectedPick.imdbRating && (
+                        <a 
+                          href={getSearchUrl('imdb', selectedPick.item.title)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs hover:brightness-110"
+                        >
+                          IMDb {selectedPick.imdbRating}
+                        </a>
+                     )}
+                     {selectedPick.rottenTomatoesScore && (
+                        <a 
+                          href={getSearchUrl('rt', selectedPick.item.title)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs hover:brightness-110"
+                        >
+                          RT {selectedPick.rottenTomatoesScore}
+                        </a>
+                     )}
+                     <span className="px-2 py-1 bg-plex-orange/20 text-plex-orange border border-plex-orange/20 rounded font-bold text-xs">{selectedPick.score}% Match</span>
+                  </div>
+
+                  {/* Reason & Summary */}
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                     <p className="text-plex-orange italic mb-4 text-sm font-medium">"{selectedPick.reason}"</p>
+                     <p className="text-gray-300 text-sm leading-relaxed mb-6">{selectedPick.item.summary}</p>
+                     
+                     <div className="flex flex-wrap gap-2 mb-6">
+                        {selectedPick.item.genre?.map(g => (
+                            <span key={g} className="text-[10px] uppercase tracking-wider bg-white/5 px-2 py-1 rounded text-gray-400">{g}</span>
+                        ))}
+                     </div>
+                  </div>
+
+                  {/* Action */}
+                  <div className="mt-auto pt-4 border-t border-white/5">
+                      {serverIdentifier ? (
+                        <a 
+                            href={getPlexLink(selectedPick.item.key)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
+                        >
+                            Watch on Plex
+                        </a>
+                      ) : (
+                         <div className="text-center text-gray-500 text-xs italic">
+                            (Connect to Plex to watch)
+                         </div>
+                      )}
+                  </div>
+               </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

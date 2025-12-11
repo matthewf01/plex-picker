@@ -32,7 +32,7 @@ export const About: React.FC<AboutProps> = ({ onClose }) => {
                   className="w-32 h-32 rounded-full object-cover border-2 border-white/10 shadow-lg bg-black/50"
                 />
                 <p className="text-white text-xl font-display">
-                  Developed by <strong>Matthew Fugel</strong>.
+                  <strong>I'm Matthew</strong>, an IT professional and life-long technology hobbyist. I built this app to solve the problem of an ever-growing media library making it difficult to re-discover what to watch.
                 </p>
               </div>
 

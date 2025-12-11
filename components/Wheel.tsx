@@ -144,7 +144,8 @@ export const Wheel: React.FC<WheelProps> = ({
   const handleMove = (pos: number) => {
     if (!isDragging.current || !containerRef.current) return;
     isMoved.current = true;
-    const delta = (pos - startPos.current) * 1.5;
+    // Reduced multiplier to make it feel heavier and stickier
+    const delta = (pos - startPos.current) * 1.1; 
     
     if (isHorizontal) {
        containerRef.current.scrollLeft = scrollPos.current - delta;
@@ -199,9 +200,8 @@ export const Wheel: React.FC<WheelProps> = ({
             ${isHorizontal ? 'flex flex-row snap-x snap-mandatory overflow-y-hidden items-center' : 'snap-y snap-mandatory overflow-x-hidden'}
           `}
         >
-          {/* Spacers */}
+          {/* Spacers - Explicitly center items in the scroll view */}
           {isHorizontal ? (
-             // Horizontal Spacers: 50vw - half item width
              <div className="flex-shrink-0" style={{ width: 'calc(50% - 80px)' }}></div>
           ) : (
              <div style={{ height: `${V_SPACER}px` }} className="w-full flex-shrink-0 pointer-events-none"></div>
@@ -230,7 +230,9 @@ export const Wheel: React.FC<WheelProps> = ({
               `}
               style={{ 
                 height: isHorizontal ? '100%' : `${V_ITEM_HEIGHT}px`,
-                width: isHorizontal ? `${H_ITEM_WIDTH}px` : 'auto'
+                width: isHorizontal ? `${H_ITEM_WIDTH}px` : 'auto',
+                // This property forces the scroll to stop at each item (no free flicking)
+                scrollSnapStop: 'always' 
               }}
             >
               <span className="uppercase tracking-widest text-sm whitespace-nowrap px-4 pointer-events-none">{opt.label}</span>

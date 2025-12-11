@@ -130,21 +130,22 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
       </div>
 
       {/* MAD LIBS SENTENCE FEEDBACK */}
-      <div className="w-full text-center mt-6 md:mt-8 h-auto min-h-[4rem] flex items-center justify-center px-4">
-        <p className="text-lg md:text-xl text-gray-400 font-light leading-[2.5rem] md:leading-[4rem] py-2">
+      <div className="w-full text-center mt-4 h-auto min-h-[4rem] flex items-center justify-center px-1 md:px-4">
+        <p className="text-lg md:text-xl text-gray-400 font-light leading-relaxed py-2 w-full break-words">
           Let's watch a 
-          <span className="text-cyan-400 font-bold border border-cyan-500/30 bg-cyan-900/20 rounded-md px-3 py-1 mx-2 shadow-[0_0_15px_rgba(34,211,238,0.1)] whitespace-nowrap">
+          <span className="text-cyan-400 font-bold border border-cyan-500/30 bg-cyan-900/20 rounded-md px-2 md:px-3 py-1 mx-1 md:mx-2 shadow-[0_0_15px_rgba(34,211,238,0.1)] whitespace-nowrap">
             {getTypeLabel()}
           </span> 
           that is 
-          <span className="text-emerald-400 font-bold border border-emerald-500/30 bg-emerald-900/20 rounded-md px-3 py-1 mx-2 shadow-[0_0_15px_rgba(52,211,153,0.1)] whitespace-nowrap">
+          <span className="text-emerald-400 font-bold border border-emerald-500/30 bg-emerald-900/20 rounded-md px-2 md:px-3 py-1 mx-1 md:mx-2 shadow-[0_0_15px_rgba(52,211,153,0.1)] whitespace-nowrap">
             {getHistoryLabel()}
           </span> 
-          <br className="hidden md:block" /> 
-          and feels like 
-          <span className="text-orange-500 font-bold border border-orange-500/30 bg-orange-900/20 rounded-md px-3 py-1 mx-2 shadow-[0_0_15px_rgba(249,115,22,0.1)] whitespace-nowrap">
-            {getVibeLabel()}
-          </span>.
+          <span className="inline-block">
+             and feels like 
+             <span className="text-orange-500 font-bold border border-orange-500/30 bg-orange-900/20 rounded-md px-2 md:px-3 py-1 mx-1 md:mx-2 shadow-[0_0_15px_rgba(249,115,22,0.1)] whitespace-nowrap">
+               {getVibeLabel()}
+             </span>.
+          </span>
         </p>
       </div>
 

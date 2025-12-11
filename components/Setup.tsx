@@ -228,8 +228,8 @@ export const Setup: React.FC<SetupProps> = ({ onConnect, onDemo, loading, error,
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-md mx-auto px-6">
-      <div className="text-center mb-10">
+    <div className="flex flex-col items-center justify-center min-h-[40vh] w-full max-w-md mx-auto px-6">
+      <div className="text-center mb-6">
         <h1 className="text-4xl md:text-5xl font-display font-bold text-white/90 mb-2 tracking-tighter">
           PLEX<span className="text-plex-orange">PICKER</span>
         </h1>
