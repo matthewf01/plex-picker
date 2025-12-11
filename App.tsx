@@ -316,8 +316,8 @@ function App() {
         </div>
         
         {/* Footer */}
-        <footer className="p-6 text-center text-gray-800 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
-          <div>Powered by Gemini AI • Not affiliated with Plex Inc.</div>
+        <footer className="p-6 text-center text-gray-300 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
+          <div>Developed by Matthew F. • AI features powered by Google Gemini • Not affiliated with Plex Inc.</div>
           <div className="flex justify-center gap-6 text-gray-600 font-medium tracking-wide">
              <button onClick={() => setOverlay('ABOUT')} className="hover:text-plex-orange transition-colors">About</button>
              <button onClick={() => setOverlay('PRIVACY')} className="hover:text-plex-orange transition-colors">Privacy</button>
