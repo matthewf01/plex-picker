@@ -1,0 +1,5 @@
+{
+  "name": "PlexPicker",
+  "description": "A cinematic decoder-ring interface that connects to your Plex server and uses Gemini AI to recommend movies or shows based on your mood and viewing history.",
+  "requestFramePermissions": []
+}
