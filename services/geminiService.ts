@@ -22,9 +22,9 @@ export class GeminiService {
     selection: DecoderSelection
   ): Promise<Recommendation[]> {
     if (!this.ai) {
-      console.error("Gemini AI is not initialized (Missing API Key)");
-      // Return a mock error/empty state or handle gracefully
-      return [];
+      const msg = "Gemini API Key is missing. Please configure 'API_KEY' in your Vercel Project Settings.";
+      console.error(msg);
+      throw new Error(msg);
     }
 
     if (candidates.length === 0) return [];
@@ -110,7 +110,7 @@ export class GeminiService {
 
     } catch (e) {
       console.error("Gemini Error", e);
-      return [];
+      throw e;
     }
   }
 }

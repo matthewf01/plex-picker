@@ -7,7 +7,7 @@ import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.7';
+const BUILD_NUMBER = '250222.8';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
@@ -107,7 +107,13 @@ function App() {
   };
 
   const handleDecode = async (selection: DecoderSelection) => {
+    if (libraryItems.length === 0) {
+      setError("Your library seems to be empty or is still loading. Please wait a moment or check your connection.");
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
     setCurrentSelection(selection);
     
     // 1. Client-side Filter
@@ -122,12 +128,30 @@ function App() {
       return true;
     });
 
-    // 2. AI Selection
-    const results = await geminiService.getRecommendations(candidates, selection);
-    
-    setRecommendations(results);
-    setAppState(AppState.RESULTS);
-    setLoading(false);
+    if (candidates.length === 0) {
+      setError(`No matches found for ${selection.type === 'any' ? 'media' : selection.type} in your library matching filter: ${selection.history}`);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 2. AI Selection
+      const results = await geminiService.getRecommendations(candidates, selection);
+      
+      if (results.length === 0) {
+         setError("AI could not find a suitable match. Try a different vibe!");
+         setLoading(false);
+         return;
+      }
+      
+      setRecommendations(results);
+      setAppState(AppState.RESULTS);
+    } catch (e: any) {
+      console.error("Recommendation Error", e);
+      setError(e.message || "Failed to get recommendations from AI.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -158,6 +182,20 @@ function App() {
       <div className="fixed bottom-2 right-2 text-[9px] text-white/10 font-mono pointer-events-none z-[9999] select-none">
         MF Build: {BUILD_NUMBER}
       </div>
+
+      {/* Global Error Toast */}
+      {error && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md px-4">
+          <div className="bg-red-900/90 border border-red-500/50 text-white px-6 py-4 rounded-lg shadow-2xl flex items-start gap-3 backdrop-blur-md animate-in slide-in-from-top-5">
+            <svg className="w-6 h-6 flex-shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <div className="flex-1">
+              <h4 className="font-bold text-sm uppercase tracking-wider mb-1">System Error</h4>
+              <p className="text-sm text-red-100">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="text-red-300 hover:text-white">✕</button>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <main className="relative z-10 min-h-screen flex flex-col">
