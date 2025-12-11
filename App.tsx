@@ -3,12 +3,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Setup } from './components/Setup';
 import { Decoder } from './components/Decoder';
 import { Results } from './components/Results';
+import { About } from './components/About';
+import { Privacy } from './components/Privacy';
+import { Support } from './components/Support';
 import { PlexService } from './services/plexService';
 import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.10';
+const BUILD_NUMBER = '250222.11';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
@@ -175,6 +178,15 @@ function App() {
     setError(null);
   };
 
+  // Logic to return from Info Pages
+  const handleClosePage = () => {
+    if (config) {
+      setAppState(AppState.DECODER);
+    } else {
+      setAppState(AppState.SETUP);
+    }
+  };
+
   // Render Logic
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-plex-orange selection:text-black overflow-y-auto relative">
@@ -208,18 +220,32 @@ function App() {
           <div className="font-display font-bold text-xl tracking-tight text-white/90">
             PLEX<span className="text-plex-orange">PICKER</span>
           </div>
-          {appState !== AppState.SETUP && (
+          
+          <div className="flex items-center gap-4 md:gap-6">
+            <button onClick={() => setAppState(AppState.ABOUT)} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">About</button>
+            <button onClick={() => setAppState(AppState.PRIVACY)} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Privacy</button>
+            
             <button 
-              onClick={handleSwitchServer}
-              className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                onClick={() => setAppState(AppState.SUPPORT)}
+                className="text-xs font-bold uppercase tracking-widest text-plex-orange hover:text-white transition-colors"
             >
-              Switch Server
+                Donate
             </button>
-          )}
+
+            {/* Show Switch Server only if logged in and not on info pages */}
+            {config && appState !== AppState.SETUP && (
+                <button 
+                onClick={handleSwitchServer}
+                className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                >
+                Switch Server
+                </button>
+            )}
+          </div>
         </header>
 
         {/* 
-           Layout Fix: 
+           Layout: 
            - justify-start + pt-12 anchors content to top
         */}
         <div className="flex-1 flex flex-col items-center justify-start pt-8 md:pt-12 p-4">
@@ -255,11 +281,28 @@ function App() {
               serverIdentifier={config?.machineIdentifier}
             />
           )}
+
+          {appState === AppState.ABOUT && (
+            <About onClose={handleClosePage} />
+          )}
+
+          {appState === AppState.PRIVACY && (
+            <Privacy onClose={handleClosePage} />
+          )}
+
+          {appState === AppState.SUPPORT && (
+            <Support onClose={handleClosePage} />
+          )}
         </div>
         
         {/* Footer */}
-        <footer className="p-6 text-center text-gray-800 text-xs">
-          Powered by Gemini AI • Not affiliated with Plex Inc.
+        <footer className="p-6 text-center text-gray-800 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
+          <div>Powered by Gemini AI • Not affiliated with Plex Inc.</div>
+          <div className="flex justify-center gap-6 text-gray-600 font-medium tracking-wide">
+             <button onClick={() => setAppState(AppState.ABOUT)} className="hover:text-plex-orange transition-colors">About</button>
+             <button onClick={() => setAppState(AppState.PRIVACY)} className="hover:text-plex-orange transition-colors">Privacy</button>
+             <button onClick={() => setAppState(AppState.SUPPORT)} className="hover:text-plex-orange transition-colors">Donate</button>
+          </div>
         </footer>
       </main>
     </div>

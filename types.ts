@@ -33,7 +33,10 @@ export enum AppState {
   DECODER = 'DECODER',
   LOADING = 'LOADING',
   RESULTS = 'RESULTS',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  ABOUT = 'ABOUT',
+  PRIVACY = 'PRIVACY',
+  SUPPORT = 'SUPPORT'
 }
 
 export interface DecoderSelection {

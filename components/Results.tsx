@@ -291,6 +291,35 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
           </div>
         </div>
       )}
+
+      {/* Support / Donate Card */}
+      <div className="mt-20 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-8 text-center relative overflow-hidden group">
+         <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+         <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
+         <p className="text-gray-400 mb-6 relative z-10">If PlexPicker helped you decide what to watch tonight, consider buying me a soda for my next movie night!</p>
+         
+         <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+            <a 
+              href="https://paypal.me/matthewfugel/5" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-plex-orange text-black font-bold rounded-full hover:bg-white hover:scale-105 transition-all shadow-lg shadow-plex-orange/20"
+            >
+              <span>🥤</span>
+              <span className="uppercase tracking-wide">Soda ($5)</span>
+            </a>
+            
+            <a 
+              href="https://paypal.me/matthewfugel" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/10 text-white font-bold rounded-full border border-white/20 hover:bg-white/20 hover:scale-105 transition-all"
+            >
+              <span>🍕</span>
+              <span className="uppercase tracking-wide">Buy me dinner</span>
+            </a>
+         </div>
+      </div>
     </div>
   );
 };
