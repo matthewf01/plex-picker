@@ -99,8 +99,15 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 md:px-6 pt-4 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+    <div className="w-full max-w-5xl mx-auto px-2 md:px-6 pt-0 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
       
+      {/* Back Button - Top Left */}
+      <div className="w-full mb-1 flex justify-start">
+        <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors text-xs md:text-sm font-medium py-1 px-1 -ml-1">
+          ← Start a New Search
+        </button>
+      </div>
+
       {/* Search Context Bar */}
       <div className="flex flex-col items-center justify-center mb-6 space-y-2 w-full">
          <div className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-500">Picked For You</div>
@@ -124,13 +131,9 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
          </div>
       </div>
 
-      {/* Top Pick Header & Context */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4 px-2 md:px-0">
-        <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors order-2 md:order-1 text-sm md:text-base">
-          ← Back to Decoder
-        </button>
-        
-        <div className="order-1 md:order-2 text-right">
+      {/* Top Pick Context - Right Aligned */}
+      <div className="flex justify-end mb-2 px-2 md:px-0">
+        <div className="text-right">
            <span className="text-plex-orange uppercase tracking-widest text-xs md:text-sm font-bold block">Top Match ({Math.round(topPick.score)}% Match)</span>
            <span className="text-gray-500 text-[10px] md:text-xs mt-1 block">Select your pick to start watching</span>
         </div>
@@ -243,7 +246,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
 
       {/* Alternatives with Sorting */}
       {others.length > 0 && (
-        <div className="border-t border-white/10 pt-8 mt-4">
+        <div className="border-t border-white/10 pt-5 mt-4">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 px-2 md:px-0">
             <h3 className="text-xl font-display font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-0">More Picks</h3>
             
@@ -323,7 +326,8 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       )}
 
       {/* Support / Donate Card */}
-      <div className="mt-10 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
+      <div className="mt-6 border border-white/10 bg-plex-slate/40 backdrop-blur-md rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
+         <div className="absolute inset-0 bg-gradient-to-r from-plex-orange/5 to-transparent opacity-100"></div>
          <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
          <p className="text-gray-400 mb-6 relative z-10 text-sm md:text-base">If PlexPicker helped you decide what to watch tonight, consider supporting the developer!</p>

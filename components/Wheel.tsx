@@ -45,6 +45,7 @@ export const Wheel: React.FC<WheelProps> = ({
 
   const isHorizontal = orientation === 'horizontal';
   const ITEM_SIZE = isHorizontal ? H_ITEM_WIDTH : V_ITEM_HEIGHT;
+  const DRAG_THRESHOLD = 5; // Pixels to move before considering it a drag
 
   // Initial Spin Effect & Selection Scroll
   useEffect(() => {
@@ -142,14 +143,22 @@ export const Wheel: React.FC<WheelProps> = ({
     startPos.current = pos;
     scrollPos.current = isHorizontal ? containerRef.current.scrollLeft : containerRef.current.scrollTop;
     containerRef.current.style.cursor = 'grabbing';
+    
+    // Disable snap during drag for 1:1 feel, re-enable on end
     containerRef.current.style.scrollSnapType = 'none';
   };
 
   const handleMove = (pos: number) => {
     if (!isDragging.current || !containerRef.current) return;
+    
+    // Check threshold to prevent accidental drags on taps
+    const diff = Math.abs(pos - startPos.current);
+    if (diff < DRAG_THRESHOLD && !isMoved.current) return;
+
     isMoved.current = true;
-    // Reduced multiplier to make it feel heavier and stickier
-    const delta = (pos - startPos.current) * 1.1; 
+    
+    // Multiplier < 1.0 makes it feel "heavier" and more precise
+    const delta = (pos - startPos.current) * 0.9; 
     
     if (isHorizontal) {
        containerRef.current.scrollLeft = scrollPos.current - delta;
@@ -162,7 +171,7 @@ export const Wheel: React.FC<WheelProps> = ({
     if (!isDragging.current || !containerRef.current) return;
     isDragging.current = false;
     containerRef.current.style.cursor = 'grab';
-    // Re-enable snap
+    // Re-enable snap strictness
     containerRef.current.style.scrollSnapType = isHorizontal ? 'x mandatory' : 'y mandatory';
   };
 
@@ -215,7 +224,7 @@ export const Wheel: React.FC<WheelProps> = ({
             <div 
               key={opt.id}
               onClick={() => {
-                 // Manual click to center
+                 // Manual click to center - only if NOT dragged
                  if (!isMoved.current) {
                    const index = idx;
                    if (isHorizontal && containerRef.current) {
@@ -230,7 +239,7 @@ export const Wheel: React.FC<WheelProps> = ({
               className={`
                 flex items-center justify-center transition-all duration-200 flex-shrink-0
                 ${isHorizontal ? 'snap-center h-full' : 'snap-center w-full'}
-                ${selected === opt.id ? 'text-white font-bold scale-110 opacity-100' : 'text-gray-500 font-light scale-90 opacity-40'}
+                ${selected === opt.id ? 'text-white font-bold scale-110 opacity-100' : 'text-gray-300 font-medium scale-90 opacity-60'}
               `}
               style={{ 
                 height: isHorizontal ? '100%' : `${V_ITEM_HEIGHT}px`,
