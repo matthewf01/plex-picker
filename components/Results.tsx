@@ -99,7 +99,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 md:px-6 pt-0 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+    <div className="w-full max-w-5xl mx-auto px-0 md:px-6 pt-0 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
       
       {/* Back Button - Top Left */}
       <div className="w-full mb-1 flex justify-start">
@@ -181,13 +181,13 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
         </div>
         
         <div className="md:col-span-8 lg:col-span-9 flex flex-col justify-center relative z-10">
-          <div className="flex items-baseline gap-4 mb-2">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
             {serverIdentifier ? (
                 <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange transition-colors">
-                    <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight">{topPick.item.title}</h1>
+                    <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight break-words">{topPick.item.title}</h1>
                 </a>
             ) : (
-                <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight">{topPick.item.title}</h1>
+                <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight break-words">{topPick.item.title}</h1>
             )}
             <span className="text-lg md:text-xl text-gray-500 font-light whitespace-nowrap">{topPick.item.year}</span>
           </div>
@@ -247,7 +247,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       {/* Alternatives with Sorting */}
       {others.length > 0 && (
         <div className="border-t border-white/10 pt-5 mt-4">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6 px-2 md:px-0">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 px-0 md:px-0">
             <h3 className="text-xl font-display font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-0">More Picks</h3>
             
             {/* Sort Menu */}
