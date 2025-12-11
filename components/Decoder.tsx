@@ -292,7 +292,7 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
       {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-display font-bold text-white mb-2">Tune Your Pick</h2>
-        <p className="text-gray-400">Align the rings to decode your next watch.</p>
+        <p className="text-gray-400">Dial in what you're looking for.</p>
       </div>
 
       {/* Wheels Container - Flex Row with strict 1/3 widths */}

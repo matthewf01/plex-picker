@@ -2,16 +2,31 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { PlexMediaItem, DecoderSelection, Recommendation } from '../types';
 
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = process.env.API_KEY;
+    if (apiKey) {
+      try {
+        this.ai = new GoogleGenAI({ apiKey });
+      } catch (e) {
+        console.error("Failed to initialize Gemini AI", e);
+      }
+    } else {
+      console.warn("Gemini API Key is missing. AI features will be disabled until configured.");
+    }
   }
 
   async getRecommendations(
     candidates: PlexMediaItem[],
     selection: DecoderSelection
   ): Promise<Recommendation[]> {
+    if (!this.ai) {
+      console.error("Gemini AI is not initialized (Missing API Key)");
+      // Return a mock error/empty state or handle gracefully
+      return [];
+    }
+
     if (candidates.length === 0) return [];
 
     // Limit candidates to 200 to ensure we stay within reasonable latency/token limits
@@ -49,7 +64,7 @@ export class GeminiService {
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
         config: {
           responseMimeType: "application/json",

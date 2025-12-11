@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Setup } from './components/Setup';
 import { Decoder } from './components/Decoder';
@@ -8,7 +7,7 @@ import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.6';
+const BUILD_NUMBER = '250222.7';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
@@ -151,6 +150,7 @@ function App() {
   // Render Logic
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-plex-orange selection:text-black overflow-y-auto relative">
+      
       {/* Background Gradient */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-plex-slate via-black to-black pointer-events-none z-0"></div>
       
