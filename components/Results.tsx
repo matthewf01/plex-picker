@@ -124,6 +124,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
         
         <div className="order-1 md:order-2 text-right">
            <span className="text-plex-orange uppercase tracking-widest text-sm font-bold block">Top Match ({topPick.score}% Match)</span>
+           <span className="text-gray-500 text-xs mt-1 block">Select your pick to start watching</span>
         </div>
       </div>
 

@@ -147,7 +147,8 @@ export const Setup: React.FC<SetupProps> = ({ onConnect, onDemo, loading, error,
       // Use resourceToken instead of master authToken
       const success = await plexService.current.testConnection(conn.uri, resourceToken);
       if (success) {
-        return { url: conn.uri, token: resourceToken };
+        // Return config, including the Master Token for future server switching
+        return { url: conn.uri, token: resourceToken, masterToken: authToken };
       }
       throw new Error('Unreachable');
     };
@@ -212,7 +213,8 @@ export const Setup: React.FC<SetupProps> = ({ onConnect, onDemo, loading, error,
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onConnect({ url: manualUrl.replace(/\/$/, ''), token: manualToken });
+    // Assume manual token is also master token
+    onConnect({ url: manualUrl.replace(/\/$/, ''), token: manualToken, masterToken: manualToken });
   };
 
   return (

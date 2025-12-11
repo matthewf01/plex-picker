@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Setup } from './components/Setup';
 import { Decoder } from './components/Decoder';
@@ -7,7 +8,7 @@ import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.8';
+const BUILD_NUMBER = '250222.10';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
@@ -161,7 +162,10 @@ function App() {
   };
 
   const handleSwitchServer = () => {
-    if (config?.token) {
+    // Prefer Master Token for server switching if available
+    if (config?.masterToken) {
+        setCachedAuthToken(config.masterToken);
+    } else if (config?.token) {
         setCachedAuthToken(config.token);
     }
     localStorage.removeItem(STORAGE_KEY);

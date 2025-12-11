@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { DecoderSelection } from '../types';
 
@@ -334,7 +335,7 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
       </div>
 
       {/* Button Container - Normal Flow */}
-      <div className="w-full flex justify-center pb-20 pt-4" style={{ marginTop: '40px' }}>
+      <div className="w-full flex flex-col items-center justify-center pb-20 pt-4" style={{ marginTop: '40px' }}>
         <button
           onClick={handleSpin}
           disabled={loading}
@@ -355,6 +356,13 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
             )}
           </span>
         </button>
+
+        {/* Loading Hint */}
+        {loading && (
+          <p className="mt-4 text-sm text-gray-500 animate-pulse text-center max-w-xs">
+            This will take a few seconds.. go grab your favorite TV snack!
+          </p>
+        )}
       </div>
     </div>
   );

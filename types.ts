@@ -3,6 +3,7 @@ export interface PlexServerConfig {
   url: string;
   token: string;
   machineIdentifier?: string;
+  masterToken?: string;
 }
 
 export interface PlexLibrarySection {
