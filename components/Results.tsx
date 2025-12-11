@@ -131,7 +131,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
         </button>
         
         <div className="order-1 md:order-2 text-right">
-           <span className="text-plex-orange uppercase tracking-widest text-sm font-bold block">Top Match ({topPick.score}% Match)</span>
+           <span className="text-plex-orange uppercase tracking-widest text-sm font-bold block">Top Match ({Math.round(topPick.score)}% Match)</span>
            <span className="text-gray-500 text-xs mt-1 block">Select your pick to start watching</span>
         </div>
       </div>
@@ -197,7 +197,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                  target="_blank" 
                  rel="noopener noreferrer"
                  className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
-                 title="View on IMDb"
+                 title="AI Estimated Rating (Click to verify on IMDb)"
                >
                  IMDb {topPick.imdbRating}
                </a>
@@ -208,7 +208,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                  target="_blank" 
                  rel="noopener noreferrer"
                  className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
-                 title="View on Rotten Tomatoes"
+                 title="AI Estimated Rating (Click to verify on Rotten Tomatoes)"
                >
                  RT {topPick.rottenTomatoesScore}
                </a>
@@ -288,13 +288,14 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm mb-2 mt-1 flex-wrap pointer-events-auto relative z-10">
-                     <span className="text-plex-orange font-bold whitespace-nowrap">{rec.score}% Match</span>
+                     <span className="text-plex-orange font-bold whitespace-nowrap">{Math.round(rec.score)}% Match</span>
                      {rec.imdbRating && (
                         <a 
                           href={getSearchUrl('imdb', rec.item.title)} 
                           target="_blank" 
                           rel="noopener noreferrer" 
                           className="text-[#f5c518] font-bold text-xs whitespace-nowrap hover:underline"
+                          title="AI Estimated Rating (Click to verify on IMDb)"
                         >
                           IMDb {rec.imdbRating}
                         </a>
@@ -305,6 +306,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                          target="_blank" 
                          rel="noopener noreferrer" 
                          className="text-[#fa320a] font-bold text-xs whitespace-nowrap hover:underline"
+                         title="AI Estimated Rating (Click to verify on Rotten Tomatoes)"
                        >
                          RT {rec.rottenTomatoesScore}
                        </a>
@@ -408,6 +410,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs hover:brightness-110"
+                          title="AI Estimated Rating (Click to verify on IMDb)"
                         >
                           IMDb {selectedPick.imdbRating}
                         </a>
@@ -418,11 +421,12 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs hover:brightness-110"
+                          title="AI Estimated Rating (Click to verify on Rotten Tomatoes)"
                         >
                           RT {selectedPick.rottenTomatoesScore}
                         </a>
                      )}
-                     <span className="px-2 py-1 bg-plex-orange/20 text-plex-orange border border-plex-orange/20 rounded font-bold text-xs">{selectedPick.score}% Match</span>
+                     <span className="px-2 py-1 bg-plex-orange/20 text-plex-orange border border-plex-orange/20 rounded font-bold text-xs">{Math.round(selectedPick.score)}% Match</span>
                   </div>
 
                   {/* Reason & Summary */}
