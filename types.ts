@@ -4,6 +4,7 @@ export interface PlexServerConfig {
   token: string;
   machineIdentifier?: string;
   masterToken?: string;
+  serverName?: string;
 }
 
 export interface PlexLibrarySection {
@@ -33,11 +34,10 @@ export enum AppState {
   DECODER = 'DECODER',
   LOADING = 'LOADING',
   RESULTS = 'RESULTS',
-  ERROR = 'ERROR',
-  ABOUT = 'ABOUT',
-  PRIVACY = 'PRIVACY',
-  SUPPORT = 'SUPPORT'
+  ERROR = 'ERROR'
 }
+
+export type OverlayState = 'ABOUT' | 'PRIVACY' | 'SUPPORT' | null;
 
 export interface DecoderSelection {
   type: 'movie' | 'show' | 'any';

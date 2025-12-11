@@ -296,27 +296,47 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       <div className="mt-20 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-8 text-center relative overflow-hidden group">
          <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
-         <p className="text-gray-400 mb-6 relative z-10">If PlexPicker helped you decide what to watch tonight, consider buying me a soda for my next movie night!</p>
+         <p className="text-gray-400 mb-6 relative z-10">If PlexPicker helped you decide what to watch tonight, please support MY next movie night!</p>
          
-         <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+         <div className="flex flex-wrap justify-center gap-3 relative z-10">
+            {/* Cyan - Soda */}
             <a 
               href="https://paypal.me/matthewfugel/5" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-plex-orange text-black font-bold rounded-full hover:bg-white hover:scale-105 transition-all shadow-lg shadow-plex-orange/20"
+              className="px-6 py-3 bg-cyan-500/10 text-cyan-400 font-bold rounded-full border border-cyan-500/30 hover:bg-cyan-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/20"
             >
-              <span>🥤</span>
-              <span className="uppercase tracking-wide">Soda ($5)</span>
+              <span className="uppercase tracking-wide">🥤 Soda ($5)</span>
+            </a>
+
+            {/* Emerald - Snacks */}
+            <a 
+              href="https://paypal.me/matthewfugel/10" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="px-6 py-3 bg-emerald-500/10 text-emerald-400 font-bold rounded-full border border-emerald-500/30 hover:bg-emerald-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-emerald-500/20"
+            >
+              <span className="uppercase tracking-wide">🍿 Snacks ($10)</span>
+            </a>
+
+            {/* Orange - Pizza */}
+            <a 
+              href="https://paypal.me/matthewfugel/20" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="px-6 py-3 bg-orange-500/10 text-orange-400 font-bold rounded-full border border-orange-500/30 hover:bg-orange-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-orange-500/20"
+            >
+              <span className="uppercase tracking-wide">🍕 Pizza ($20)</span>
             </a>
             
+            {/* Gradient - Surprise */}
             <a 
               href="https://paypal.me/matthewfugel" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/10 text-white font-bold rounded-full border border-white/20 hover:bg-white/20 hover:scale-105 transition-all"
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 via-blue-500 to-emerald-400 text-white font-bold rounded-full border-none hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/30"
             >
-              <span>🍕</span>
-              <span className="uppercase tracking-wide">Buy me dinner</span>
+              <span className="uppercase tracking-wide">🎁 Surprise ✨</span>
             </a>
          </div>
       </div>

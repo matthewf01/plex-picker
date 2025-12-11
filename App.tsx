@@ -8,13 +8,15 @@ import { Privacy } from './components/Privacy';
 import { Support } from './components/Support';
 import { PlexService } from './services/plexService';
 import { GeminiService } from './services/geminiService';
-import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation } from './types';
+import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation, OverlayState } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.11';
+const BUILD_NUMBER = '250222.18';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
+  const [overlay, setOverlay] = useState<OverlayState>(null);
+  
   const [config, setConfig] = useState<PlexServerConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +122,7 @@ function App() {
     setError(null);
     setCurrentSelection(selection);
     
-    // 1. Client-side Filter
+    // 1. Filter Client-side
     let candidates = libraryItems.filter(item => {
       // Filter Type
       if (selection.type !== 'any' && item.type !== selection.type) return false;
@@ -178,13 +180,17 @@ function App() {
     setError(null);
   };
 
-  // Logic to return from Info Pages
-  const handleClosePage = () => {
+  const handleCloseOverlay = () => {
+    setOverlay(null);
+  };
+
+  const handleLogoClick = () => {
     if (config) {
       setAppState(AppState.DECODER);
     } else {
       setAppState(AppState.SETUP);
     }
+    setOverlay(null);
   };
 
   // Render Logic
@@ -213,34 +219,60 @@ function App() {
         </div>
       )}
 
+      {/* OVERLAYS (Modals) */}
+      {overlay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           {/* Backdrop - Transparent to show Glassmorphism */}
+           <div 
+             className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+             onClick={handleCloseOverlay}
+           ></div>
+           
+           {/* Modal Content */}
+           <div className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+             {overlay === 'ABOUT' && <About onClose={handleCloseOverlay} />}
+             {overlay === 'PRIVACY' && <Privacy onClose={handleCloseOverlay} />}
+             {overlay === 'SUPPORT' && <Support onClose={handleCloseOverlay} />}
+           </div>
+        </div>
+      )}
+
       {/* Content */}
-      <main className="relative z-10 min-h-screen flex flex-col">
+      <main className={`relative z-10 min-h-screen flex flex-col transition-filter duration-300 ${overlay ? 'blur-sm grayscale-[50%]' : ''}`}>
+        
         {/* Header / Nav */}
-        <header className="p-6 flex justify-between items-center bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-          <div className="font-display font-bold text-xl tracking-tight text-white/90">
-            PLEX<span className="text-plex-orange">PICKER</span>
+        <header className="p-6 flex justify-between items-center bg-black/50 backdrop-blur-sm sticky top-0 z-40">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <button onClick={handleLogoClick} className="font-display font-bold text-xl tracking-tight text-white/90 hover:opacity-80 transition-opacity text-left">
+                PLEX<span className="text-plex-orange">PICKER</span>
+            </button>
+            
+            {/* Server Status & Switch */}
+            {config && appState !== AppState.SETUP && (
+                <div className="flex items-center gap-3 pl-0 md:pl-4 md:border-l md:border-white/10">
+                    <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                        {config.serverName || 'Server'}
+                    </span>
+                    <button 
+                        onClick={handleSwitchServer}
+                        className="text-xs font-bold uppercase tracking-widest text-purple-400 italic hover:text-white transition-colors"
+                    >
+                        (Switch)
+                    </button>
+                </div>
+            )}
           </div>
           
           <div className="flex items-center gap-4 md:gap-6">
-            <button onClick={() => setAppState(AppState.ABOUT)} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">About</button>
-            <button onClick={() => setAppState(AppState.PRIVACY)} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Privacy</button>
+            <button onClick={() => setOverlay('ABOUT')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">About</button>
+            <button onClick={() => setOverlay('PRIVACY')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Privacy</button>
             
             <button 
-                onClick={() => setAppState(AppState.SUPPORT)}
+                onClick={() => setOverlay('SUPPORT')}
                 className="text-xs font-bold uppercase tracking-widest text-plex-orange hover:text-white transition-colors"
             >
                 Donate
             </button>
-
-            {/* Show Switch Server only if logged in and not on info pages */}
-            {config && appState !== AppState.SETUP && (
-                <button 
-                onClick={handleSwitchServer}
-                className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
-                >
-                Switch Server
-                </button>
-            )}
           </div>
         </header>
 
@@ -281,27 +313,15 @@ function App() {
               serverIdentifier={config?.machineIdentifier}
             />
           )}
-
-          {appState === AppState.ABOUT && (
-            <About onClose={handleClosePage} />
-          )}
-
-          {appState === AppState.PRIVACY && (
-            <Privacy onClose={handleClosePage} />
-          )}
-
-          {appState === AppState.SUPPORT && (
-            <Support onClose={handleClosePage} />
-          )}
         </div>
         
         {/* Footer */}
         <footer className="p-6 text-center text-gray-800 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
           <div>Powered by Gemini AI • Not affiliated with Plex Inc.</div>
           <div className="flex justify-center gap-6 text-gray-600 font-medium tracking-wide">
-             <button onClick={() => setAppState(AppState.ABOUT)} className="hover:text-plex-orange transition-colors">About</button>
-             <button onClick={() => setAppState(AppState.PRIVACY)} className="hover:text-plex-orange transition-colors">Privacy</button>
-             <button onClick={() => setAppState(AppState.SUPPORT)} className="hover:text-plex-orange transition-colors">Donate</button>
+             <button onClick={() => setOverlay('ABOUT')} className="hover:text-plex-orange transition-colors">About</button>
+             <button onClick={() => setOverlay('PRIVACY')} className="hover:text-plex-orange transition-colors">Privacy</button>
+             <button onClick={() => setOverlay('SUPPORT')} className="hover:text-plex-orange transition-colors">Donate</button>
           </div>
         </footer>
       </main>
