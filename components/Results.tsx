@@ -99,7 +99,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 md:px-6 pt-4 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+    <div className="w-full max-w-5xl mx-auto px-2 md:px-6 pt-4 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
       
       {/* Search Context Bar */}
       <div className="flex flex-col items-center justify-center mb-6 space-y-2 w-full">
@@ -125,19 +125,19 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       </div>
 
       {/* Top Pick Header & Context */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-        <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors order-2 md:order-1">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4 px-2 md:px-0">
+        <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors order-2 md:order-1 text-sm md:text-base">
           ← Back to Decoder
         </button>
         
         <div className="order-1 md:order-2 text-right">
-           <span className="text-plex-orange uppercase tracking-widest text-sm font-bold block">Top Match ({Math.round(topPick.score)}% Match)</span>
-           <span className="text-gray-500 text-xs mt-1 block">Select your pick to start watching</span>
+           <span className="text-plex-orange uppercase tracking-widest text-xs md:text-sm font-bold block">Top Match ({Math.round(topPick.score)}% Match)</span>
+           <span className="text-gray-500 text-[10px] md:text-xs mt-1 block">Select your pick to start watching</span>
         </div>
       </div>
 
       {/* Main Feature */}
-      <div className="grid md:grid-cols-12 gap-8 mb-8 bg-plex-slate/20 p-6 rounded-3xl border border-white/5 relative overflow-hidden">
+      <div className="grid md:grid-cols-12 gap-8 mb-8 bg-plex-slate/20 p-4 md:p-6 rounded-3xl border border-white/5 relative overflow-hidden">
         {/* Background Blur Effect */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-plex-orange/5 blur-[100px] rounded-full pointer-events-none -mr-20 -mt-20"></div>
 
@@ -181,22 +181,22 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
           <div className="flex items-baseline gap-4 mb-2">
             {serverIdentifier ? (
                 <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange transition-colors">
-                    <h1 className="text-4xl md:text-5xl font-display font-bold text-white leading-tight">{topPick.item.title}</h1>
+                    <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight">{topPick.item.title}</h1>
                 </a>
             ) : (
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-white leading-tight">{topPick.item.title}</h1>
+                <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight">{topPick.item.title}</h1>
             )}
-            <span className="text-xl text-gray-500 font-light">{topPick.item.year}</span>
+            <span className="text-lg md:text-xl text-gray-500 font-light whitespace-nowrap">{topPick.item.year}</span>
           </div>
           
           {/* Ratings & Metadata */}
-          <div className="flex flex-wrap items-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
              {topPick.imdbRating && (
                <a 
                  href={getSearchUrl('imdb', topPick.item.title)} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
+                 className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-[10px] md:text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
                  title="AI Estimated Rating (Click to verify on IMDb)"
                >
                  IMDb {topPick.imdbRating}
@@ -207,32 +207,32 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                  href={getSearchUrl('rt', topPick.item.title)}
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
+                 className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-[10px] md:text-xs flex items-center gap-1 hover:brightness-110 transition-all" 
                  title="AI Estimated Rating (Click to verify on Rotten Tomatoes)"
                >
                  RT {topPick.rottenTomatoesScore}
                </a>
              )}
-            <span className="w-1 h-1 bg-gray-600 rounded-full mx-1"></span>
-            <span className="text-xs font-medium uppercase tracking-wider text-gray-300">
+            <span className="w-1 h-1 bg-gray-600 rounded-full mx-0.5"></span>
+            <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider text-gray-300">
               {topPick.item.type === 'show' ? 'TV Series' : 'Movie'}
             </span>
-             <span className="w-1 h-1 bg-gray-600 rounded-full mx-1"></span>
+             <span className="w-1 h-1 bg-gray-600 rounded-full mx-0.5"></span>
              {topPick.item.duration ? (
-                <span className="text-xs font-medium text-gray-400">{formatDuration(topPick.item.duration)}</span>
+                <span className="text-[10px] md:text-xs font-medium text-gray-400">{formatDuration(topPick.item.duration)}</span>
              ) : (
-                 <span className="text-xs font-medium text-gray-600">-- min</span>
+                 <span className="text-[10px] md:text-xs font-medium text-gray-600">-- min</span>
              )}
-             <span className="w-1 h-1 bg-gray-600 rounded-full mx-1"></span>
+             <span className="w-1 h-1 bg-gray-600 rounded-full mx-0.5"></span>
             {topPick.item.genre?.slice(0, 3).map(g => (
-              <span key={g} className="text-plex-orange text-xs font-medium uppercase tracking-wider">
+              <span key={g} className="text-plex-orange text-[10px] md:text-xs font-medium uppercase tracking-wider">
                 {g}
               </span>
             ))}
           </div>
 
-          <div className="bg-plex-orange/10 border-l-4 border-plex-orange p-4 mb-6 rounded-r-lg">
-            <p className="text-lg text-white italic font-light">"{topPick.reason}"</p>
+          <div className="bg-plex-orange/10 border-l-4 border-plex-orange p-3 md:p-4 mb-6 rounded-r-lg">
+            <p className="text-base md:text-lg text-white italic font-light">"{topPick.reason}"</p>
           </div>
           
           <p className="text-gray-400 leading-relaxed max-w-2xl text-sm md:text-base">
@@ -244,7 +244,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       {/* Alternatives with Sorting */}
       {others.length > 0 && (
         <div className="border-t border-white/10 pt-8 mt-4">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 px-2 md:px-0">
             <h3 className="text-xl font-display font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-0">More Picks</h3>
             
             {/* Sort Menu */}
@@ -268,7 +268,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
             {others.map((rec) => (
               <div 
                 key={rec.item.ratingKey} 
-                className="flex gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group relative cursor-pointer"
+                className="flex gap-3 md:gap-4 p-2 md:p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group relative cursor-pointer"
               >
                  {/* Click Target for Card -> Modal */}
                 <div className="absolute inset-0 z-0" onClick={() => setSelectedPick(rec)}></div>
@@ -283,19 +283,20 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                 </div>
                 <div className="flex-1 min-w-0 pointer-events-none">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-bold text-lg text-white group-hover:text-plex-orange transition-colors truncate pr-2">{rec.item.title}</h4>
-                    <span className="text-xs text-gray-500 font-mono whitespace-nowrap">{rec.item.year}</span>
+                    <h4 className="font-bold text-base md:text-lg text-white group-hover:text-plex-orange transition-colors truncate pr-2">{rec.item.title}</h4>
+                    <span className="text-[10px] md:text-xs text-gray-500 font-mono whitespace-nowrap mt-1">{rec.item.year}</span>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-sm mb-2 mt-1 flex-wrap pointer-events-auto relative z-10">
-                     <span className="text-plex-orange font-bold whitespace-nowrap">{Math.round(rec.score)}% Match</span>
+                  {/* Compact Metadata Line */}
+                  <div className="flex items-center gap-1.5 md:gap-3 text-sm mb-2 mt-1 flex-wrap pointer-events-auto relative z-10">
+                     <span className="text-plex-orange font-bold whitespace-nowrap text-[10px] md:text-xs">{Math.round(rec.score)}% Match</span>
                      {rec.imdbRating && (
                         <a 
                           href={getSearchUrl('imdb', rec.item.title)} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-[#f5c518] font-bold text-xs whitespace-nowrap hover:underline"
-                          title="AI Estimated Rating (Click to verify on IMDb)"
+                          className="text-[#f5c518] font-bold text-[10px] md:text-xs whitespace-nowrap hover:underline"
+                          title="IMDb"
                         >
                           IMDb {rec.imdbRating}
                         </a>
@@ -305,15 +306,15 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                          href={getSearchUrl('rt', rec.item.title)} 
                          target="_blank" 
                          rel="noopener noreferrer" 
-                         className="text-[#fa320a] font-bold text-xs whitespace-nowrap hover:underline"
-                         title="AI Estimated Rating (Click to verify on Rotten Tomatoes)"
+                         className="text-[#fa320a] font-bold text-[10px] md:text-xs whitespace-nowrap hover:underline"
+                         title="Rotten Tomatoes"
                        >
                          RT {rec.rottenTomatoesScore}
                        </a>
                      )}
-                     <span className="text-gray-500 text-xs whitespace-nowrap">• {formatDuration(rec.item.duration)}</span>
+                     <span className="text-gray-500 text-[10px] md:text-xs whitespace-nowrap">• {formatDuration(rec.item.duration)}</span>
                   </div>
-                  <p className="text-gray-400 text-sm line-clamp-2 italic">"{rec.reason}"</p>
+                  <p className="text-gray-400 text-xs md:text-sm line-clamp-2 italic">"{rec.reason}"</p>
                 </div>
               </div>
             ))}
@@ -322,18 +323,18 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       )}
 
       {/* Support / Donate Card */}
-      <div className="mt-10 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-8 text-center relative overflow-hidden group">
+      <div className="mt-10 border border-white/5 bg-gradient-to-r from-plex-orange/5 to-transparent rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
          <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
-         <p className="text-gray-400 mb-6 relative z-10">If PlexPicker helped you decide what to watch tonight, please support MY next movie night!</p>
+         <p className="text-gray-400 mb-6 relative z-10 text-sm md:text-base">If PlexPicker helped you decide what to watch tonight, consider supporting the developer!</p>
          
-         <div className="flex flex-wrap justify-center gap-3 relative z-10">
+         <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-3 relative z-10 w-full max-w-sm md:max-w-none mx-auto">
             {/* Cyan - Soda */}
             <a 
               href="https://paypal.me/matthewfugel/5" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-cyan-500/10 text-cyan-400 font-bold rounded-full border border-cyan-500/30 hover:bg-cyan-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/20"
+              className="px-4 py-3 md:px-6 bg-cyan-500/10 text-cyan-400 font-bold rounded-full border border-cyan-500/30 hover:bg-cyan-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/20 text-xs md:text-sm flex items-center justify-center"
             >
               <span className="uppercase tracking-wide">🥤 Soda ($5)</span>
             </a>
@@ -343,7 +344,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
               href="https://paypal.me/matthewfugel/10" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-emerald-500/10 text-emerald-400 font-bold rounded-full border border-emerald-500/30 hover:bg-emerald-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-emerald-500/20"
+              className="px-4 py-3 md:px-6 bg-emerald-500/10 text-emerald-400 font-bold rounded-full border border-emerald-500/30 hover:bg-emerald-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-emerald-500/20 text-xs md:text-sm flex items-center justify-center"
             >
               <span className="uppercase tracking-wide">🍿 Snacks ($10)</span>
             </a>
@@ -353,7 +354,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
               href="https://paypal.me/matthewfugel/20" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-orange-500/10 text-orange-400 font-bold rounded-full border border-orange-500/30 hover:bg-orange-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-orange-500/20"
+              className="px-4 py-3 md:px-6 bg-orange-500/10 text-orange-400 font-bold rounded-full border border-orange-500/30 hover:bg-orange-500 hover:text-black hover:scale-105 transition-all shadow-lg hover:shadow-orange-500/20 text-xs md:text-sm flex items-center justify-center"
             >
               <span className="uppercase tracking-wide">🍕 Pizza ($20)</span>
             </a>
@@ -363,9 +364,9 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
               href="https://paypal.me/matthewfugel" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 via-blue-500 to-emerald-400 text-white font-bold rounded-full border-none hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/30"
+              className="px-4 py-3 md:px-6 bg-gradient-to-r from-purple-600 via-blue-500 to-emerald-400 text-white font-bold rounded-full border-none hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/30 text-xs md:text-sm flex items-center justify-center"
             >
-              <span className="uppercase tracking-wide">🎁 Surprise ✨</span>
+              <span className="uppercase tracking-wide">🎁 Surprise</span>
             </a>
          </div>
       </div>

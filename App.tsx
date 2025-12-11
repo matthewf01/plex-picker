@@ -11,7 +11,7 @@ import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation, OverlayState } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.18';
+const BUILD_NUMBER = '250222.22';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
@@ -201,7 +201,7 @@ function App() {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-plex-slate via-black to-black pointer-events-none z-0"></div>
       
       {/* Build Number */}
-      <div className="fixed bottom-2 right-2 text-[9px] text-white/10 font-mono pointer-events-none z-[9999] select-none">
+      <div className="fixed bottom-2 right-2 text-[10px] text-gray-600 font-mono pointer-events-none z-[9999] select-none">
         MF Build: {BUILD_NUMBER}
       </div>
 
@@ -230,7 +230,7 @@ function App() {
            
            {/* Modal Content */}
            <div className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-             {overlay === 'ABOUT' && <About onClose={handleCloseOverlay} />}
+             {overlay === 'ABOUT' && <About onClose={handleCloseOverlay} onDonate={() => setOverlay('SUPPORT')} />}
              {overlay === 'PRIVACY' && <Privacy onClose={handleCloseOverlay} />}
              {overlay === 'SUPPORT' && <Support onClose={handleCloseOverlay} />}
            </div>
@@ -264,8 +264,8 @@ function App() {
           </div>
           
           <div className="flex items-center gap-4 md:gap-6">
-            <button onClick={() => setOverlay('ABOUT')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">About</button>
-            <button onClick={() => setOverlay('PRIVACY')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Privacy</button>
+            <button onClick={() => setOverlay('ABOUT')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">About</button>
+            <button onClick={() => setOverlay('PRIVACY')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Privacy</button>
             
             <button 
                 onClick={() => setOverlay('SUPPORT')}
@@ -316,9 +316,9 @@ function App() {
         </div>
         
         {/* Footer */}
-        <footer className="p-6 text-center text-gray-300 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
+        <footer className="p-8 pb-12 text-center text-gray-500 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
           <div>Developed by Matthew F. • AI features powered by Google Gemini • Not affiliated with Plex Inc.</div>
-          <div className="flex justify-center gap-6 text-gray-600 font-medium tracking-wide">
+          <div className="flex justify-center gap-6 font-medium tracking-wide">
              <button onClick={() => setOverlay('ABOUT')} className="hover:text-plex-orange transition-colors">About</button>
              <button onClick={() => setOverlay('PRIVACY')} className="hover:text-plex-orange transition-colors">Privacy</button>
              <button onClick={() => setOverlay('SUPPORT')} className="hover:text-plex-orange transition-colors">Donate</button>

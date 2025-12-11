@@ -108,11 +108,15 @@ export const Wheel: React.FC<WheelProps> = ({
     let centerIndex = 0;
     
     if (isHorizontal) {
+      // Horizontal Logic: 
+      // Items start after the spacer. 
+      // Spacer aligns Item 0 to the start of the scrollable area (visually centered).
+      // So scrollLeft = 0 implies Index 0.
       const scrollL = containerRef.current.scrollLeft;
-      const containerW = containerRef.current.clientWidth;
-      const centerPoint = scrollL + (containerW / 2);
-      centerIndex = Math.floor(centerPoint / ITEM_SIZE);
+      centerIndex = Math.round(scrollL / ITEM_SIZE);
     } else {
+      // Vertical Logic:
+      // Same principle. Spacer aligns Item 0 to scroll 0.
       const scrollT = containerRef.current.scrollTop;
       centerIndex = Math.round(scrollT / ITEM_SIZE);
     }

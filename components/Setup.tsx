@@ -228,12 +228,12 @@ export const Setup: React.FC<SetupProps> = ({ onConnect, onDemo, loading, error,
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[40vh] w-full max-w-md mx-auto px-6">
+    <div className="flex flex-col items-center justify-center min-h-[40vh] w-full max-w-lg mx-auto px-6">
       <div className="text-center mb-6">
         <h1 className="text-4xl md:text-5xl font-display font-bold text-white/90 mb-2 tracking-tighter">
           PLEX<span className="text-plex-orange">PICKER</span>
         </h1>
-        <p className="text-gray-400 font-light text-lg tracking-wide uppercase">When you can't decide what to watch</p>
+        <p className="text-gray-400 font-light text-base md:text-lg tracking-normal md:tracking-wide uppercase whitespace-nowrap">When you can't decide what to watch</p>
       </div>
 
       <div className="w-full bg-plex-slate/50 p-8 rounded-2xl border border-white/5 backdrop-blur-sm shadow-2xl relative overflow-hidden min-h-[300px] flex flex-col justify-center">
