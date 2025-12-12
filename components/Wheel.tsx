@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 export interface WheelOption {
   id: string;
@@ -13,17 +13,17 @@ interface WheelProps {
   title?: string;
   onSpin?: boolean;
   orientation?: 'vertical' | 'horizontal';
+  accentColor?: 'cyan' | 'emerald' | 'orange' | 'default';
 }
 
 // VERTICAL CONSTANTS
 const V_CONTAINER_HEIGHT = 240;
 const V_ITEM_HEIGHT = 48;
-const V_SPACER = (V_CONTAINER_HEIGHT / 2) - (V_ITEM_HEIGHT / 2); // 96px
+const V_SPACER = (V_CONTAINER_HEIGHT / 2) - (V_ITEM_HEIGHT / 2);
 
 // HORIZONTAL CONSTANTS
-const H_CONTAINER_HEIGHT = 40; // Super compact for mobile text only
-const H_ITEM_WIDTH = 160;      // Wide enough for text
-// Horizontal spacers are calculated dynamically via CSS/calc usually
+const H_CONTAINER_HEIGHT = 48; // Slightly taller for better touch target
+const H_ITEM_WIDTH = 160;
 
 export const Wheel: React.FC<WheelProps> = ({ 
   options, 
@@ -31,98 +31,68 @@ export const Wheel: React.FC<WheelProps> = ({
   onChange, 
   title, 
   onSpin,
-  orientation = 'vertical'
+  orientation = 'vertical',
+  accentColor = 'default'
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Drag State
-  const isDragging = useRef(false);
-  const startPos = useRef(0);
-  const scrollPos = useRef(0);
-  const isMoved = useRef(false);
+  // State refs for swipe detection
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
   const hasSpun = useRef(false);
-  const isSpinning = useRef(false); // Lock for intro animation
-
+  
   const isHorizontal = orientation === 'horizontal';
   const ITEM_SIZE = isHorizontal ? H_ITEM_WIDTH : V_ITEM_HEIGHT;
-  const DRAG_THRESHOLD = 5; // Pixels to move before considering it a drag
 
-  // Initial Spin Effect & Selection Scroll
+  // Sync Scroll with Selection
   useEffect(() => {
-    if (containerRef.current && !isDragging.current) {
+    if (containerRef.current) {
       const index = options.findIndex(o => o.id === selected);
-      
+      if (index === -1) return;
+
       const scrollToTarget = (behavior: ScrollBehavior = 'smooth') => {
         if (!containerRef.current) return;
         
+        let targetPos = 0;
+        
         if (isHorizontal) {
-          // Calculate center for horizontal
-          const containerW = containerRef.current.clientWidth;
-          const targetLeft = (index * ITEM_SIZE) - (containerW / 2) + (ITEM_SIZE / 2);
-          
-          containerRef.current.scrollTo({
-            left: Math.max(0, targetLeft),
-            behavior
-          });
+           // For horizontal, we are using index-based snapping.
+           // Target is simply index * width
+           targetPos = index * ITEM_SIZE;
+           
+           // Force scroll because we disabled overflow
+           containerRef.current.scrollTo({ left: targetPos, behavior });
         } else {
-          containerRef.current.scrollTo({
-            top: index * ITEM_SIZE,
-            behavior
-          });
+           // Vertical keeps native scrolling behavior
+           targetPos = index * ITEM_SIZE;
+           
+           const currentPos = containerRef.current.scrollTop;
+           if (Math.abs(currentPos - targetPos) > 2) {
+             containerRef.current.scrollTo({ top: targetPos, behavior });
+           }
         }
       };
 
-      // Intro Spin (Vertical Only)
+      // Intro Spin Animation (Vertical Only)
       if (onSpin && !hasSpun.current && !isHorizontal) {
         hasSpun.current = true;
-        isSpinning.current = true; // LOCK selection updates
-        
-        // Start from bottom (simulate spin)
         containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        
-        // Smooth scroll to target
         setTimeout(() => {
-          if (!isDragging.current) {
              scrollToTarget();
-          }
-          
-          // UNLOCK after animation + buffer
-          setTimeout(() => {
-            isSpinning.current = false;
-            if (containerRef.current && !isDragging.current) {
-               scrollToTarget('auto'); // Snap force
-            }
-          }, 1000);
         }, 100);
       } else {
-        // Normal update or Horizontal init
-        if (index !== -1 && !isSpinning.current) {
-           scrollToTarget();
-        }
+        scrollToTarget();
       }
     }
   }, [selected, options, onSpin, isHorizontal, ITEM_SIZE]);
 
+  // Vertical Scroll Handler (Desktop)
   const handleScroll = () => {
-    if (!containerRef.current || isSpinning.current) return; // Ignore if spinning/locked
+    if (isHorizontal || !containerRef.current) return;
     
-    let centerIndex = 0;
-    
-    if (isHorizontal) {
-      // Horizontal Logic: 
-      // Items start after the spacer. 
-      // Spacer aligns Item 0 to the start of the scrollable area (visually centered).
-      // So scrollLeft = 0 implies Index 0.
-      const scrollL = containerRef.current.scrollLeft;
-      centerIndex = Math.round(scrollL / ITEM_SIZE);
-    } else {
-      // Vertical Logic:
-      // Same principle. Spacer aligns Item 0 to scroll 0.
-      const scrollT = containerRef.current.scrollTop;
-      centerIndex = Math.round(scrollT / ITEM_SIZE);
-    }
-    
-    // Clamp
+    // Vertical logic relies on native scroll events
+    const scrollT = containerRef.current.scrollTop;
+    let centerIndex = Math.round(scrollT / ITEM_SIZE);
     centerIndex = Math.max(0, Math.min(centerIndex, options.length - 1));
 
     if (centerIndex >= 0 && centerIndex < options.length) {
@@ -134,53 +104,67 @@ export const Wheel: React.FC<WheelProps> = ({
     }
   };
 
-  // --- MOUSE/TOUCH HANDLERS (Unified Logic) ---
-  const handleStart = (pos: number) => {
-    if (!containerRef.current) return;
-    isSpinning.current = false;
-    isDragging.current = true;
-    isMoved.current = false;
-    startPos.current = pos;
-    scrollPos.current = isHorizontal ? containerRef.current.scrollLeft : containerRef.current.scrollTop;
-    containerRef.current.style.cursor = 'grabbing';
-    
-    // Disable snap during drag for 1:1 feel, re-enable on end
-    containerRef.current.style.scrollSnapType = 'none';
+  // Manual Navigation (Arrows or Swipe)
+  const handleNav = (dir: 'prev' | 'next') => {
+      const idx = options.findIndex(o => o.id === selected);
+      let newIdx = idx;
+      
+      if (dir === 'prev') newIdx = Math.max(0, idx - 1);
+      if (dir === 'next') newIdx = Math.min(options.length - 1, idx + 1);
+      
+      if (newIdx !== idx) {
+          if (navigator.vibrate) navigator.vibrate(10);
+          onChange(options[newIdx].id);
+      }
   };
 
-  const handleMove = (pos: number) => {
-    if (!isDragging.current || !containerRef.current) return;
-    
-    // Check threshold to prevent accidental drags on taps
-    const diff = Math.abs(pos - startPos.current);
-    if (diff < DRAG_THRESHOLD && !isMoved.current) return;
+  // Touch Handlers for Mobile (Horizontal)
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!isHorizontal) return;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
 
-    isMoved.current = true;
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!isHorizontal) return;
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!isHorizontal || !touchStartX.current || !touchEndX.current) return;
     
-    // Multiplier < 1.0 makes it feel "heavier" and more precise
-    const delta = (pos - startPos.current) * 0.9; 
-    
-    if (isHorizontal) {
-       containerRef.current.scrollLeft = scrollPos.current - delta;
-    } else {
-       containerRef.current.scrollTop = scrollPos.current - delta;
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNav('next');
+    } else if (isRightSwipe) {
+      handleNav('prev');
+    }
+
+    // Reset
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  // Resolve Arrow Colors
+  const getArrowClass = () => {
+    switch(accentColor) {
+      case 'cyan': return 'text-cyan-400/60 hover:text-cyan-300 active:text-cyan-100';
+      case 'emerald': return 'text-emerald-400/60 hover:text-emerald-300 active:text-emerald-100';
+      case 'orange': return 'text-orange-500/60 hover:text-orange-400 active:text-orange-100';
+      default: return 'text-white/40 hover:text-white active:text-plex-orange';
     }
   };
 
-  const handleEnd = () => {
-    if (!isDragging.current || !containerRef.current) return;
-    isDragging.current = false;
-    containerRef.current.style.cursor = 'grab';
-    // Re-enable snap strictness
-    containerRef.current.style.scrollSnapType = isHorizontal ? 'x mandatory' : 'y mandatory';
-  };
+  const arrowClass = getArrowClass();
 
   return (
-    <div className={`flex flex-col w-full select-none ${isHorizontal ? 'items-start' : ''}`}>
+    <div className={`flex flex-col w-full select-none relative group ${isHorizontal ? 'items-start' : ''}`}>
       {title && <div className="text-center text-xs uppercase tracking-[0.2em] text-plex-orange mb-2 font-bold h-4 w-full">{title}</div>}
       
       <div 
-        className="relative overflow-hidden bg-plex-slate/30 rounded-lg border border-white/5 w-full transition-all"
+        className="relative bg-plex-slate/30 rounded-lg border border-white/5 w-full transition-all"
         style={{ height: isHorizontal ? `${H_CONTAINER_HEIGHT}px` : `${V_CONTAINER_HEIGHT}px` }} 
       >
         
@@ -193,29 +177,46 @@ export const Wheel: React.FC<WheelProps> = ({
         ) : (
           <div className="absolute top-1/2 left-0 right-0 h-12 -mt-6 bg-white/5 border-y border-white/10 pointer-events-none z-0 backdrop-blur-[1px]"></div>
         )}
+
+        {/* NAVIGATION BUTTONS (Horizontal Only) */}
+        {isHorizontal && (
+            <>
+                {/* Left Button */}
+                <button 
+                    onClick={() => handleNav('prev')}
+                    className={`absolute left-0 top-0 bottom-0 z-30 w-12 flex items-center justify-center transition-all active:scale-90 ${arrowClass}`}
+                    aria-label="Previous"
+                >
+                    <svg className="w-8 h-8 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+
+                {/* Right Button */}
+                <button 
+                    onClick={() => handleNav('next')}
+                    className={`absolute right-0 top-0 bottom-0 z-30 w-12 flex items-center justify-center transition-all active:scale-90 ${arrowClass}`}
+                    aria-label="Next"
+                >
+                    <svg className="w-8 h-8 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </>
+        )}
         
         {/* Scroll Container */}
         <div 
           ref={containerRef}
           onScroll={handleScroll}
-          
-          onMouseDown={(e) => handleStart(isHorizontal ? e.pageX : e.pageY)}
-          onMouseMove={(e) => { e.preventDefault(); handleMove(isHorizontal ? e.pageX : e.pageY); }}
-          onMouseUp={handleEnd}
-          onMouseLeave={handleEnd}
-          
-          onTouchStart={(e) => handleStart(isHorizontal ? e.touches[0].pageX : e.touches[0].pageY)}
-          onTouchMove={(e) => handleMove(isHorizontal ? e.touches[0].pageX : e.touches[0].pageY)}
-          onTouchEnd={handleEnd}
-          
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
           className={`
-            w-full h-full overflow-auto hide-scrollbar relative z-20 cursor-grab touch-pan-x touch-pan-y
-            ${isHorizontal ? 'flex flex-row snap-x snap-mandatory overflow-y-hidden items-center' : 'snap-y snap-mandatory overflow-x-hidden'}
+            w-full h-full relative z-20
+            ${isHorizontal ? 'flex flex-row items-center overflow-hidden touch-pan-y' : 'overflow-auto hide-scrollbar snap-y snap-mandatory cursor-grab'}
           `}
+          // Horizontal: Overflow Hidden kills native scroll momentum. We control pos via scrollTo in useEffect.
         >
-          {/* Spacers - Explicitly center items in the scroll view */}
+          {/* Spacers */}
           {isHorizontal ? (
-             <div className="flex-shrink-0" style={{ width: 'calc(50% - 80px)' }}></div>
+             <div className="flex-shrink-0 transition-[width]" style={{ width: 'calc(50% - 80px)' }}></div>
           ) : (
              <div style={{ height: `${V_SPACER}px` }} className="w-full flex-shrink-0 pointer-events-none"></div>
           )}
@@ -224,27 +225,17 @@ export const Wheel: React.FC<WheelProps> = ({
             <div 
               key={opt.id}
               onClick={() => {
-                 // Manual click to center - only if NOT dragged
-                 if (!isMoved.current) {
-                   const index = idx;
-                   if (isHorizontal && containerRef.current) {
-                      const containerW = containerRef.current.clientWidth;
-                      const targetLeft = (index * ITEM_SIZE) - (containerW / 2) + (ITEM_SIZE / 2);
-                      containerRef.current.scrollTo({ left: targetLeft, behavior: 'smooth' });
-                   } else if (containerRef.current) {
-                      containerRef.current.scrollTo({ top: index * ITEM_SIZE, behavior: 'smooth' });
-                   }
-                 }
+                   // Click to select
+                   onChange(opt.id);
               }}
               className={`
-                flex items-center justify-center transition-all duration-200 flex-shrink-0
-                ${isHorizontal ? 'snap-center h-full' : 'snap-center w-full'}
+                flex items-center justify-center transition-all duration-300 flex-shrink-0
+                ${isHorizontal ? 'h-full' : 'snap-center w-full'}
                 ${selected === opt.id ? 'text-white font-bold scale-110 opacity-100' : 'text-gray-300 font-medium scale-90 opacity-60'}
               `}
               style={{ 
                 height: isHorizontal ? '100%' : `${V_ITEM_HEIGHT}px`,
                 width: isHorizontal ? `${H_ITEM_WIDTH}px` : 'auto',
-                // This property forces the scroll to stop at each item (no free flicking)
                 scrollSnapStop: 'always' 
               }}
             >
@@ -261,11 +252,10 @@ export const Wheel: React.FC<WheelProps> = ({
         </div>
       </div>
       
-      {/* Horizontal Mask Styles injected dynamically or via class */}
       <style>{`
         .wheel-mask-h {
-           mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-           -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+           mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+           -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
         }
       `}</style>
     </div>
