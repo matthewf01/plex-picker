@@ -25,6 +25,7 @@ function App() {
   const [libraryItems, setLibraryItems] = useState<PlexMediaItem[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [currentSelection, setCurrentSelection] = useState<DecoderSelection | null>(null);
+  const [decoderKey, setDecoderKey] = useState(0);
   
   // Services
   const geminiService = useMemo(() => new GeminiService(), []);
@@ -64,6 +65,7 @@ function App() {
         
       setConfig(finalConfig);
       setAppState(AppState.DECODER);
+      setDecoderKey(prev => prev + 1); // Ensure fresh state
       
       // Start loading libraries in background
       loadLibraryData(tempService);
@@ -106,6 +108,7 @@ function App() {
   const handleDemo = () => {
     setConfig(null); // Null config triggers demo mode in PlexService
     setAppState(AppState.DECODER);
+    setDecoderKey(prev => prev + 1);
     
     // Load mock data
     const demoService = new PlexService(undefined);
@@ -164,6 +167,7 @@ function App() {
     setAppState(AppState.DECODER);
     setRecommendations([]);
     setCurrentSelection(null);
+    setDecoderKey(prev => prev + 1); // Force new Decoder instance (reset selections)
   };
 
   const handleSwitchServer = () => {
@@ -187,6 +191,7 @@ function App() {
   const handleLogoClick = () => {
     if (config) {
       setAppState(AppState.DECODER);
+      setDecoderKey(prev => prev + 1); // Force reset when clicking logo
     } else {
       setAppState(AppState.SETUP);
     }
@@ -298,6 +303,7 @@ function App() {
 
           {appState === AppState.DECODER && (
             <Decoder 
+              key={decoderKey}
               onDecode={handleDecode} 
               loading={loading} 
             />

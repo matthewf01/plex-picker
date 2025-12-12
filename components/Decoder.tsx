@@ -48,10 +48,10 @@ const VIBE_OPTIONS = [
 ];
 
 export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
-  // STRICTLY Default to 'any'
-  const [type, setType] = useState<any>('any');
-  const [history, setHistory] = useState<any>('any');
-  const [vibe, setVibe] = useState('any');
+  // STRICTLY Default to the first option in the list
+  const [type, setType] = useState<string>(TYPE_OPTIONS[0].id);
+  const [history, setHistory] = useState<string>(HISTORY_OPTIONS[0].id);
+  const [vibe, setVibe] = useState<string>(VIBE_OPTIONS[0].id);
   
   // Responsive check
   const [isMobile, setIsMobile] = useState(false);
@@ -64,8 +64,8 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
 
   const handleSpin = () => {
     onDecode({
-      type,
-      history,
+      type: type as any,
+      history: history as any,
       vibe
     });
   };
