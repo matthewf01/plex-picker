@@ -11,7 +11,7 @@ import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation, OverlayState } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '250222.27';
+const BUILD_NUMBER = '250222.28';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);
@@ -195,10 +195,10 @@ function App() {
 
   // Render Logic
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-plex-orange selection:text-black overflow-y-auto relative">
+    <div className="h-[100dvh] bg-black text-white font-sans selection:bg-plex-orange selection:text-black overflow-hidden relative flex flex-col">
       
       {/* Background Gradient */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-plex-slate via-black to-black pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-plex-slate via-black to-black pointer-events-none z-0"></div>
       
       {/* Build Number */}
       <div className="fixed bottom-2 right-2 text-[10px] text-gray-600 font-mono pointer-events-none z-[9999] select-none">
@@ -207,8 +207,8 @@ function App() {
 
       {/* Global Error Toast */}
       {error && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md px-4">
-          <div className="bg-red-900/90 border border-red-500/50 text-white px-6 py-4 rounded-lg shadow-2xl flex items-start gap-3 backdrop-blur-md animate-in slide-in-from-top-5">
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md px-4 pointer-events-none">
+          <div className="bg-red-900/90 border border-red-500/50 text-white px-6 py-4 rounded-lg shadow-2xl flex items-start gap-3 backdrop-blur-md animate-in slide-in-from-top-5 pointer-events-auto">
             <svg className="w-6 h-6 flex-shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <div className="flex-1">
               <h4 className="font-bold text-sm uppercase tracking-wider mb-1">System Error</h4>
@@ -237,50 +237,48 @@ function App() {
         </div>
       )}
 
-      {/* Content */}
-      <main className={`relative z-10 min-h-screen flex flex-col transition-filter duration-300 ${overlay ? 'blur-sm grayscale-[50%]' : ''}`}>
-        
-        {/* Header / Nav */}
-        <header className="p-6 flex justify-between items-center bg-black/50 backdrop-blur-sm sticky top-0 z-40">
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <button onClick={handleLogoClick} className="font-display font-bold text-xl tracking-tight text-white/90 hover:opacity-80 transition-opacity text-left">
-                PLEX<span className="text-plex-orange">PICKER</span>
-            </button>
-            
-            {/* Server Status & Switch */}
-            {config && appState !== AppState.SETUP && (
-                <div className="flex items-center gap-3 pl-0 md:pl-4 md:border-l md:border-white/10">
-                    <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                        {config.serverName || 'Server'}
-                    </span>
-                    <button 
-                        onClick={handleSwitchServer}
-                        className="text-xs font-bold uppercase tracking-widest text-purple-400 italic hover:text-white transition-colors"
-                    >
-                        (Switch)
-                    </button>
-                </div>
-            )}
-          </div>
+      {/* HEADER (Sticky Top, Non-scrolling) */}
+      <header className="flex-none p-4 md:p-6 flex justify-between items-center bg-black/50 backdrop-blur-sm z-40 border-b border-white/5 relative">
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+          <button onClick={handleLogoClick} className="font-display font-bold text-xl tracking-tight text-white/90 hover:opacity-80 transition-opacity text-left">
+              PLEX<span className="text-plex-orange">PICKER</span>
+          </button>
           
-          <div className="flex items-center gap-4 md:gap-6">
-            <button onClick={() => setOverlay('ABOUT')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">About</button>
-            <button onClick={() => setOverlay('PRIVACY')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Privacy</button>
-            
-            <button 
-                onClick={() => setOverlay('SUPPORT')}
-                className="text-xs font-bold uppercase tracking-widest text-plex-orange hover:text-white transition-colors"
-            >
-                Donate
-            </button>
-          </div>
-        </header>
+          {/* Server Status & Switch */}
+          {config && appState !== AppState.SETUP && (
+              <div className="flex items-center gap-3 pl-0 md:pl-4 md:border-l md:border-white/10">
+                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                      {config.serverName || 'Server'}
+                  </span>
+                  <button 
+                      onClick={handleSwitchServer}
+                      className="text-xs font-bold uppercase tracking-widest text-purple-400 italic hover:text-white transition-colors"
+                  >
+                      (Switch)
+                  </button>
+              </div>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-4 md:gap-6">
+          <button onClick={() => setOverlay('ABOUT')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">About</button>
+          <button onClick={() => setOverlay('PRIVACY')} className="hidden md:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Privacy</button>
+          
+          <button 
+              onClick={() => setOverlay('SUPPORT')}
+              className="text-xs font-bold uppercase tracking-widest text-plex-orange hover:text-white transition-colors"
+          >
+              Donate
+          </button>
+        </div>
+      </header>
 
-        {/* 
-           Layout: 
-           - justify-start + pt-12 anchors content to top
-        */}
-        <div className="flex-1 flex flex-col items-center justify-start pt-8 md:pt-12 p-4">
+      {/* MAIN CONTENT (Scrollable Area) */}
+      {/* Changed logic: Main is a flex-col. Content takes flex-1. Footer is last. */}
+      <main className={`flex-1 relative z-10 overflow-y-auto overflow-x-hidden flex flex-col transition-filter duration-300 ${overlay ? 'blur-sm grayscale-[50%]' : ''}`}>
+        
+        {/* Content Wrapper */}
+        <div className="flex-1 w-full flex flex-col items-center justify-start pt-4 md:pt-12 p-4 pb-0">
           {appState === AppState.SETUP && (
             <Setup 
                 onConnect={handleConnect} 
@@ -315,8 +313,8 @@ function App() {
           )}
         </div>
         
-        {/* Footer */}
-        <footer className="p-8 pb-12 text-center text-gray-500 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/50 backdrop-blur-sm">
+        {/* Footer - Sits naturally at bottom of flex column */}
+        <footer className="flex-none p-6 md:p-8 text-center text-gray-500 text-xs flex flex-col gap-2 border-t border-white/5 bg-black/20 backdrop-blur-sm mt-auto">
           <div>Developed by Matthew F. • AI features powered by Google Gemini • Not affiliated with Plex Inc.</div>
           <div className="flex justify-center gap-6 font-medium tracking-wide">
              <button onClick={() => setOverlay('ABOUT')} className="hover:text-plex-orange transition-colors">About</button>

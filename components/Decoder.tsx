@@ -94,8 +94,8 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
       
       {/* Header */}
       <div className="text-center mb-4 md:mb-8">
-        <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-1 md:mb-2">Tune Your Pick</h2>
-        <p className="text-sm md:text-base text-gray-400">Dial in what you're looking for.</p>
+        <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-1 md:mb-2">What are you in the mood for?</h2>
+        <p className="text-sm md:text-base text-gray-400">Dial it in - the Picker AI will find the perfect match.</p>
       </div>
 
       {/* Wheels Container - Tight gap on mobile */}

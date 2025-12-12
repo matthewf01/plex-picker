@@ -81,7 +81,14 @@ export const Wheel: React.FC<WheelProps> = ({
              scrollToTarget();
         }, 100);
       } else {
-        scrollToTarget();
+        // Fix for mobile layout glitch: sometimes browser needs a tick to calculate widths correctly
+        // especially when switching from hidden/vertical to horizontal
+        if (isHorizontal) {
+          setTimeout(() => scrollToTarget('auto'), 0); // Immediate instant scroll on mount/change
+          setTimeout(() => scrollToTarget('smooth'), 50); // Ensure it sticks
+        } else {
+          scrollToTarget();
+        }
       }
     }
   }, [selected, options, onSpin, isHorizontal, ITEM_SIZE]);
@@ -148,16 +155,16 @@ export const Wheel: React.FC<WheelProps> = ({
   };
 
   // Resolve Arrow Colors
-  const getArrowClass = () => {
+  const getArrowColorClass = () => {
     switch(accentColor) {
-      case 'cyan': return 'text-cyan-400/60 hover:text-cyan-300 active:text-cyan-100';
-      case 'emerald': return 'text-emerald-400/60 hover:text-emerald-300 active:text-emerald-100';
-      case 'orange': return 'text-orange-500/60 hover:text-orange-400 active:text-orange-100';
-      default: return 'text-white/40 hover:text-white active:text-plex-orange';
+      case 'cyan': return 'text-cyan-400';
+      case 'emerald': return 'text-emerald-400';
+      case 'orange': return 'text-orange-400';
+      default: return 'text-white';
     }
   };
 
-  const arrowClass = getArrowClass();
+  const arrowColor = getArrowColorClass();
 
   return (
     <div className={`flex flex-col w-full select-none relative group ${isHorizontal ? 'items-start' : ''}`}>
@@ -178,25 +185,25 @@ export const Wheel: React.FC<WheelProps> = ({
           <div className="absolute top-1/2 left-0 right-0 h-12 -mt-6 bg-white/5 border-y border-white/10 pointer-events-none z-0 backdrop-blur-[1px]"></div>
         )}
 
-        {/* NAVIGATION BUTTONS (Horizontal Only) */}
+        {/* NAVIGATION BUTTONS (Horizontal Only) - Enhanced Glass Effect */}
         {isHorizontal && (
             <>
                 {/* Left Button */}
                 <button 
                     onClick={() => handleNav('prev')}
-                    className={`absolute left-0 top-0 bottom-0 z-30 w-12 flex items-center justify-center transition-all active:scale-90 ${arrowClass}`}
+                    className={`absolute left-1 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg hover:bg-white/20 hover:scale-105`}
                     aria-label="Previous"
                 >
-                    <svg className="w-8 h-8 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+                    <svg className={`w-5 h-5 ${arrowColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                 </button>
 
                 {/* Right Button */}
                 <button 
                     onClick={() => handleNav('next')}
-                    className={`absolute right-0 top-0 bottom-0 z-30 w-12 flex items-center justify-center transition-all active:scale-90 ${arrowClass}`}
+                    className={`absolute right-1 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg hover:bg-white/20 hover:scale-105`}
                     aria-label="Next"
                 >
-                    <svg className="w-8 h-8 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+                    <svg className={`w-5 h-5 ${arrowColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
                 </button>
             </>
         )}
@@ -212,7 +219,6 @@ export const Wheel: React.FC<WheelProps> = ({
             w-full h-full relative z-20
             ${isHorizontal ? 'flex flex-row items-center overflow-hidden touch-pan-y' : 'overflow-auto hide-scrollbar snap-y snap-mandatory cursor-grab'}
           `}
-          // Horizontal: Overflow Hidden kills native scroll momentum. We control pos via scrollTo in useEffect.
         >
           {/* Spacers */}
           {isHorizontal ? (

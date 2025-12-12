@@ -41,28 +41,28 @@ export const Support: React.FC<SupportProps> = ({ onClose }) => {
 
   return (
     <div className="w-full max-w-lg mx-auto p-1 animate-in zoom-in-95 duration-200">
-      <div className="bg-plex-slate/60 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-2xl text-center relative">
+      <div className="bg-plex-slate/60 backdrop-blur-xl p-5 md:p-8 rounded-2xl border border-white/10 shadow-2xl text-center relative">
         
         {/* Close Button Inside */}
         <button 
           onClick={onClose} 
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          className="absolute top-3 right-3 md:top-4 md:right-4 text-gray-400 hover:text-white transition-colors p-2"
           aria-label="Close"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
 
-        <div className="w-24 h-24 bg-plex-orange/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-plex-orange/20 transition-all duration-300">
-           <span className="text-5xl animate-in zoom-in duration-300" key={selectedAmount}>{getEmoji()}</span>
+        <div className="w-20 h-20 md:w-24 md:h-24 bg-plex-orange/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 border border-plex-orange/20 transition-all duration-300 mt-2">
+           <span className="text-4xl md:text-5xl animate-in zoom-in duration-300" key={selectedAmount}>{getEmoji()}</span>
         </div>
         
-        <h3 className="text-2xl font-bold text-white mb-4">Did you find this awesome?</h3>
-        <p className="text-gray-300 leading-relaxed mb-8 text-sm">
+        <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-4">Did you find this awesome?</h3>
+        <p className="text-gray-300 leading-relaxed mb-6 md:mb-8 text-sm px-1">
           PlexPicker is a passion project built to cure choice paralysis. 
           If it helped you find something great to watch tonight, consider sending a gift!
         </p>
 
-        <div className="max-w-xs mx-auto mb-10">
+        <div className="max-w-xs mx-auto mb-6 md:mb-10">
            <Wheel 
              options={DONATION_OPTIONS} 
              selected={selectedAmount} 
@@ -78,20 +78,20 @@ export const Support: React.FC<SupportProps> = ({ onClose }) => {
             target="_blank" 
             rel="noopener noreferrer" 
             className={`
-              inline-flex items-center justify-center gap-2 px-12 py-4 font-bold rounded-full 
-              hover:scale-105 transition-all duration-300 shadow-lg uppercase tracking-widest text-sm
+              inline-flex items-center justify-center gap-2 px-8 md:px-12 py-3 md:py-4 font-bold rounded-full 
+              hover:scale-105 transition-all duration-300 shadow-lg uppercase tracking-widest text-xs md:text-sm w-full md:w-auto
               ${isSurprise 
                 ? 'bg-gradient-to-r from-purple-600 via-blue-500 to-emerald-400 text-white border-none shadow-purple-500/20 hover:shadow-purple-500/40' 
                 : 'bg-plex-orange text-black hover:bg-white shadow-plex-orange/20'
               }
             `}
           >
-            <span>{isSurprise ? '✨' : getEmoji()}</span>
+            <span className="text-lg">{isSurprise ? '✨' : getEmoji()}</span>
             <span>{getButtonText()}</span>
           </a>
         </div>
         
-        <p className="mt-8 text-[10px] text-gray-500 uppercase tracking-wider">
+        <p className="mt-6 md:mt-8 text-[10px] text-gray-500 uppercase tracking-wider">
           Securely handled via PayPal
         </p>
       </div>
