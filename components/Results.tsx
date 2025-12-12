@@ -94,11 +94,10 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   };
 
   // Generate App Link (Mobile Scheme)
-  const getPlexAppLink = (key: string) => {
+  // Uses the "com.plexapp.plugins.library" format which is more reliable for deep linking to specific items on mobile
+  const getPlexAppLink = (ratingKey: string) => {
     if (!serverIdentifier) return undefined;
-    // plex://server/{machineIdentifier}/details?key={key}
-    const encodedKey = encodeURIComponent(key);
-    return `plex://server/${serverIdentifier}/details?key=${encodedKey}`;
+    return `plex://server/${serverIdentifier}/com.plexapp.plugins.library/library/metadata/${ratingKey}`;
   };
 
   if (!topPick) {
@@ -154,7 +153,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
         <div className="col-span-4 md:col-span-4 lg:col-span-3 md:row-span-2 relative z-10">
           {serverIdentifier ? (
              <a 
-               href={isMobile ? getPlexAppLink(topPick.item.key) : getPlexWebLink(topPick.item.key)} 
+               href={isMobile ? getPlexAppLink(topPick.item.ratingKey) : getPlexWebLink(topPick.item.key)} 
                target={isMobile ? undefined : "_blank"}
                rel={isMobile ? undefined : "noopener noreferrer"}
                className="block group relative h-full"
@@ -369,7 +368,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                       {serverIdentifier ? (
                         <>
                           <a 
-                            href={isMobile ? getPlexAppLink(selectedPick.item.key) : getPlexWebLink(selectedPick.item.key)} 
+                            href={isMobile ? getPlexAppLink(selectedPick.item.ratingKey) : getPlexWebLink(selectedPick.item.key)} 
                             target={isMobile ? undefined : "_blank"} 
                             rel={isMobile ? undefined : "noopener noreferrer"} 
                             className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
