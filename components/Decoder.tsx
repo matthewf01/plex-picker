@@ -6,6 +6,7 @@ import { Wheel } from './Wheel';
 interface DecoderProps {
   onDecode: (selection: DecoderSelection) => void;
   loading: boolean;
+  isLibraryReady?: boolean;
 }
 
 const TYPE_OPTIONS = [
@@ -47,7 +48,7 @@ const VIBE_OPTIONS = [
   ...VIBE_STRINGS.map(v => ({ id: v, label: v }))
 ];
 
-export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
+export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading, isLibraryReady = true }) => {
   // STRICTLY Default to the first option in the list
   const [type, setType] = useState<string>(TYPE_OPTIONS[0].id);
   const [history, setHistory] = useState<string>(HISTORY_OPTIONS[0].id);
@@ -94,6 +95,33 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
     if (vibe === 'any') return 'a Surprise';
     return `"${vibe}"`;
   }
+
+  // Determine Button Text and Status
+  const getButtonContent = () => {
+    if (loading) {
+       if (!isLibraryReady) {
+         return (
+           <>
+             <svg className="animate-spin -ml-1 h-5 w-5 md:h-6 md:w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+             </svg>
+             Scanning Library...
+           </>
+         );
+       }
+       return (
+          <>
+            <svg className="animate-spin -ml-1 h-5 w-5 md:h-6 md:w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Picking...
+          </>
+       );
+    }
+    return 'Pick something to watch';
+  };
 
   return (
     // Top-down flow container with no constraints
@@ -170,24 +198,17 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
           className="group relative inline-flex items-center justify-center px-8 md:px-10 py-4 md:py-5 font-bold text-white transition-all duration-300 bg-gradient-to-r from-purple-600 via-blue-500 to-emerald-400 rounded-full hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(147,51,234,0.5)]"
         >
           <span className="relative flex items-center gap-3 uppercase tracking-widest text-base md:text-xl">
-            {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 h-5 w-5 md:h-6 md:w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Picking...
-              </>
-            ) : (
-              'Pick something to watch'
-            )}
+             {getButtonContent()}
           </span>
         </button>
 
         {/* Loading Hint */}
         {loading && (
           <p className="mt-4 text-xs md:text-sm text-gray-500 animate-pulse text-center max-w-xs">
-            This will take a few seconds.. go grab your favorite TV snack!
+            {isLibraryReady 
+               ? "This will take a few seconds.. go grab your favorite TV snack!"
+               : "Connecting to your Plex server and indexing movies..."
+            }
           </p>
         )}
       </div>

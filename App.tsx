@@ -306,6 +306,7 @@ function App() {
               key={decoderKey}
               onDecode={handleDecode} 
               loading={loading} 
+              isLibraryReady={libraryItems.length > 0}
             />
           )}
 
