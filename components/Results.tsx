@@ -396,11 +396,11 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
 
       {/* Details Modal */}
       {selectedPick && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 pt-24 md:p-4">
            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedPick(null)}></div>
-           <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row overflow-hidden">
+           <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row overflow-hidden">
                <button onClick={() => setSelectedPick(null)} className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors">✕</button>
-               <div className="w-full md:w-2/5 relative h-64 md:h-auto">
+               <div className="w-full md:w-2/5 relative h-64 md:h-auto flex-shrink-0">
                  {selectedPick.item.thumb ? <img src={selectedPick.item.thumb} alt={selectedPick.item.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">No Poster</div>}
                </div>
                <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col">
@@ -420,7 +420,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                         {selectedPick.item.genre?.map(g => (<span key={g} className="text-[10px] uppercase tracking-wider bg-white/5 px-2 py-1 rounded text-gray-400">{g}</span>))}
                      </div>
                   </div>
-                  <div className="mt-auto pt-4 border-t border-white/5 flex flex-col gap-2">
+                  <div className="mt-auto pt-4 border-t border-white/5 flex flex-col gap-2 flex-shrink-0">
                       {serverIdentifier ? (
                         <>
                           <a 

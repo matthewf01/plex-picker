@@ -199,14 +199,33 @@ export const Wheel: React.FC<WheelProps> = ({
         // Re-enable snap to settle selection
         containerRef.current.style.scrollSnapType = 'y mandatory';
         containerRef.current.style.cursor = 'grab';
-        
-        // If we barely moved, we don't need to do anything, click handler will fire.
-        // If we dragged, the snap logic will settle it, and onScroll will trigger onChange.
     }
 
     // Clean up listeners
     window.removeEventListener('mousemove', onWindowMouseMove);
     window.removeEventListener('mouseup', onWindowMouseUp);
+  };
+
+  // 4. Container Click: Handle "Click Above/Below" to Step
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // If drag distance was significant, this is just the tail end of a drag, so ignore.
+    if (dragDistance.current > 5 || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    
+    if (isHorizontal) {
+        const x = e.clientX - rect.left;
+        const centerX = rect.width / 2;
+        // Tap Left -> Prev, Tap Right -> Next
+        if (x < centerX) handleNav('prev');
+        else handleNav('next');
+    } else {
+        const y = e.clientY - rect.top;
+        const centerY = rect.height / 2;
+        // Tap Top -> Prev, Tap Bottom -> Next
+        if (y < centerY) handleNav('prev');
+        else handleNav('next');
+    }
   };
   
   // Clean up on unmount just in case
@@ -251,7 +270,6 @@ export const Wheel: React.FC<WheelProps> = ({
         {/* NAVIGATION BUTTONS (Horizontal Only) */}
         {isHorizontal && (
             <>
-                {/* Left Button */}
                 <button 
                     onClick={() => handleNav('prev')}
                     className={`absolute left-1 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg hover:bg-white/20 hover:scale-105`}
@@ -260,7 +278,6 @@ export const Wheel: React.FC<WheelProps> = ({
                     <svg className={`w-5 h-5 ${arrowColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                 </button>
 
-                {/* Right Button */}
                 <button 
                     onClick={() => handleNav('next')}
                     className={`absolute right-1 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg hover:bg-white/20 hover:scale-105`}
@@ -281,7 +298,8 @@ export const Wheel: React.FC<WheelProps> = ({
           onTouchEnd={onTouchEnd}
           // Mouse (Desktop Drag)
           onMouseDown={onMouseDown}
-          // Note: MouseMove and MouseUp are handled by window listeners initiated in onMouseDown
+          // Click (Desktop Tap empty space)
+          onClick={handleContainerClick}
           
           className={`
             w-full h-full relative z-20
@@ -298,7 +316,10 @@ export const Wheel: React.FC<WheelProps> = ({
           {options.map((opt, idx) => (
             <div 
               key={opt.id}
-              onClick={() => {
+              onClick={(e) => {
+                   // CRITICAL: Stop propagation so container click doesn't also fire
+                   e.stopPropagation();
+                   
                    // Only trigger selection if we haven't dragged significantly
                    if (dragDistance.current < 5) {
                       onChange(opt.id);
