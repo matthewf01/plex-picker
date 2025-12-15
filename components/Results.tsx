@@ -14,23 +14,9 @@ type SortOption = 'match' | 'imdb' | 'rt' | 'year' | 'length';
 export const Results: React.FC<ResultsProps> = ({ recommendations, selection, onReset, serverIdentifier }) => {
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [selectedPick, setSelectedPick] = useState<Recommendation | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   const topPick = recommendations[0];
   let others = recommendations.slice(1);
-
-  // Detect Mobile for Deep Linking
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent)) {
-        setIsMobile(true);
-      } else {
-        setIsMobile(window.innerWidth < 768);
-      }
-    };
-    checkMobile();
-  }, []);
 
   // Sorting Logic
   others = [...others].sort((a, b) => {
@@ -87,17 +73,12 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   };
 
   // Generate Web Link (Universal)
-  const getPlexWebLink = (key: string) => {
+  // This acts as a Universal Link on mobile devices (iOS/Android) if the app is installed,
+  // otherwise it opens the web interface.
+  const getPlexLink = (key: string) => {
     if (!serverIdentifier) return undefined;
     const encodedKey = encodeURIComponent(key);
     return `https://app.plex.tv/desktop/#!/server/${serverIdentifier}/details?key=${encodedKey}`;
-  };
-
-  // Generate App Link (Mobile Scheme)
-  // Uses the "com.plexapp.plugins.library" format which is more reliable for deep linking to specific items on mobile
-  const getPlexAppLink = (ratingKey: string) => {
-    if (!serverIdentifier) return undefined;
-    return `plex://server/${serverIdentifier}/com.plexapp.plugins.library/library/metadata/${ratingKey}`;
   };
 
   if (!topPick) {
@@ -111,17 +92,17 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 md:px-6 pt-0 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+    <div className="w-full max-w-6xl mx-auto px-0 md:px-6 pt-0 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
       
       {/* Back Button */}
-      <div className="w-full mb-1 flex justify-start">
+      <div className="w-full mb-1 flex justify-start px-4 md:px-0">
         <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors text-xs md:text-sm font-medium py-1 px-1 -ml-1">
           ← Start a New Search
         </button>
       </div>
 
       {/* Context Pills */}
-      <div className="flex flex-col items-center justify-center mb-4 md:mb-6 space-y-2 w-full">
+      <div className="flex flex-col items-center justify-center mb-4 md:mb-8 space-y-2 w-full px-4 md:px-0">
          <div className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-500">Picked For You</div>
          <div className="flex flex-wrap items-center justify-center gap-2 w-full">
             <span className="font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-500/20 px-2 md:px-4 py-1 rounded-full text-xs md:text-sm whitespace-nowrap">
@@ -139,132 +120,213 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       </div>
 
       {/* Top Pick Header */}
-      <div className="flex justify-end mb-2 px-2 md:px-0">
+      <div className="flex justify-end mb-2 px-4 md:px-0">
         <div className="text-right">
            <span className="text-plex-orange uppercase tracking-widest text-xs md:text-sm font-bold block">Top Match ({Math.round(topPick.score)}% Match)</span>
         </div>
       </div>
 
       {/* MAIN FEATURE CARD */}
-      <div className="grid grid-cols-12 gap-3 md:gap-8 mb-8 bg-plex-slate/20 p-4 md:p-6 rounded-3xl border border-white/5 relative overflow-hidden">
+      <div className="bg-plex-slate/20 md:p-8 rounded-3xl border border-white/5 relative overflow-hidden mb-10">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-plex-orange/5 blur-[100px] rounded-full pointer-events-none -mr-20 -mt-20"></div>
 
-        {/* 1. IMAGE BLOCK (Left) */}
-        <div className="col-span-4 md:col-span-4 lg:col-span-3 md:row-span-2 relative z-10">
-          {serverIdentifier ? (
-             <a 
-               href={isMobile ? getPlexAppLink(topPick.item.ratingKey) : getPlexWebLink(topPick.item.key)} 
-               target={isMobile ? undefined : "_blank"}
-               rel={isMobile ? undefined : "noopener noreferrer"}
-               className="block group relative h-full"
-             >
-                <div className="aspect-[2/3] w-full relative rounded-xl overflow-hidden shadow-2xl bg-gray-900 ring-1 ring-white/10 group-hover:ring-plex-orange transition-all">
-                    {topPick.item.thumb ? (
-                    <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
-                    ) : (
-                    <div className="w-full h-full bg-plex-slate flex items-center justify-center text-gray-600 text-xs text-center p-1">No Poster</div>
-                    )}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-plex-orange flex items-center justify-center text-black shadow-lg">
-                            <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
+        {/* --- MOBILE LAYOUT (Compact Side-by-Side) --- */}
+        <div className="md:hidden p-4 relative z-10 flex flex-col gap-4">
+             <div className="flex gap-4 items-start">
+                {/* Poster - Fixed width, approx 1/3 screen */}
+                <div className="w-32 flex-shrink-0">
+                    <div className="aspect-[2/3] w-full rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-gray-900 relative">
+                        {serverIdentifier ? (
+                            <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                                {topPick.item.thumb ? (
+                                    <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-plex-slate flex items-center justify-center text-gray-500 text-[10px]">No Poster</div>
+                                )}
+                            </a>
+                        ) : (
+                             <div className="w-full h-full">
+                                {topPick.item.thumb ? (
+                                    <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-plex-slate flex items-center justify-center text-gray-500 text-[10px]">No Poster</div>
+                                )}
+                             </div>
+                        )}
                     </div>
                 </div>
-             </a>
-          ) : (
-            <div className="aspect-[2/3] w-full relative rounded-xl overflow-hidden shadow-2xl bg-gray-900">
-                {topPick.item.thumb ? (
-                  <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-plex-slate flex items-center justify-center text-gray-600">No Poster</div>
-                )}
-            </div>
-          )}
-        </div>
-        
-        {/* 2. HEADER + REASON BLOCK (Right) */}
-        <div className="col-span-8 md:col-span-8 lg:col-span-9 flex flex-col justify-start relative z-10">
-          
-          {/* Compact Flow Header: Title -> Year -> Type -> Duration -> Ratings */}
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-             {/* Title & Year */}
-             <div className="inline-block">
-                {serverIdentifier ? (
-                    <a href={getPlexWebLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange transition-colors">
-                        <h1 className="text-lg md:text-5xl font-display font-bold text-white leading-tight inline">
-                            {topPick.item.title}
-                        </h1>
-                        <span className="text-gray-500 font-light text-base md:text-3xl ml-2">({topPick.item.year})</span>
-                    </a>
-                ) : (
-                    <>
-                        <h1 className="text-lg md:text-5xl font-display font-bold text-white leading-tight inline">
-                            {topPick.item.title}
-                        </h1>
-                        <span className="text-gray-500 font-light text-base md:text-3xl ml-2">({topPick.item.year})</span>
-                    </>
-                )}
+
+                {/* Metadata Column */}
+                <div className="flex-1 min-w-0 flex flex-col justify-start pt-1">
+                    <h1 className="text-2xl font-display font-bold text-white leading-tight mb-2">
+                         {serverIdentifier ? (
+                            <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange">
+                                {topPick.item.title}
+                            </a>
+                         ) : (
+                             topPick.item.title
+                         )}
+                    </h1>
+                    
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400 mb-3">
+                         <span>{topPick.item.year}</span>
+                         <span>•</span>
+                         <span className="uppercase font-bold">{topPick.item.type === 'show' ? 'TV' : 'Movie'}</span>
+                         {topPick.item.duration && (
+                            <>
+                                <span>•</span>
+                                <span>{formatDuration(topPick.item.duration)}</span>
+                            </>
+                         )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {topPick.imdbRating && (
+                            <a href={getSearchUrl('imdb', topPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-[10px] hover:brightness-110">
+                              IMDb {topPick.imdbRating}
+                            </a>
+                        )}
+                        {topPick.rottenTomatoesScore && (
+                            <a href={getSearchUrl('rt', topPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-[10px] hover:brightness-110">
+                              RT {topPick.rottenTomatoesScore}
+                            </a>
+                        )}
+                    </div>
+                </div>
              </div>
 
-             {/* Metadata Flow */}
-             <span className="w-1 h-1 bg-gray-600 rounded-full self-center hidden md:inline-block"></span>
-             
-             <span className="text-xs md:text-sm font-bold text-gray-300 uppercase tracking-wider">
-               {topPick.item.type === 'show' ? 'TV Series' : 'Movie'}
-             </span>
-             
-             {topPick.item.duration && (
-                 <>
-                    <span className="w-1 h-1 bg-gray-600 rounded-full self-center"></span>
-                    <span className="text-xs md:text-sm font-medium text-gray-400">{formatDuration(topPick.item.duration)}</span>
-                 </>
+             {/* AI Reason */}
+             <div className="bg-plex-orange/10 border-l-4 border-plex-orange p-4 rounded-r-xl">
+                 <h3 className="text-plex-orange text-[10px] font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
+                    Why match?
+                 </h3>
+                 <p className="text-white font-serif italic leading-relaxed text-sm">
+                    "{topPick.reason}"
+                 </p>
+             </div>
+
+             {/* Action Button */}
+             {serverIdentifier && (
+                <a 
+                    href={getPlexLink(topPick.item.key)} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-full block text-center bg-plex-orange text-black font-bold py-3 rounded-xl shadow-lg shadow-plex-orange/20 uppercase tracking-widest text-sm"
+                >
+                    Watch on Plex
+                </a>
              )}
-
-             {/* Ratings */}
-             <div className="flex items-center gap-2 ml-1">
-                 {topPick.imdbRating && (
-                    <a href={getSearchUrl('imdb', topPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-1.5 py-0.5 bg-[#f5c518] text-black rounded font-bold text-[10px] md:text-xs flex items-center gap-1 hover:brightness-110">
-                      IMDb {topPick.imdbRating}
-                    </a>
-                 )}
-                 {topPick.rottenTomatoesScore && (
-                    <a href={getSearchUrl('rt', topPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-1.5 py-0.5 bg-[#fa320a] text-white rounded font-bold text-[10px] md:text-xs flex items-center gap-1 hover:brightness-110">
-                      RT {topPick.rottenTomatoesScore}
-                    </a>
-                 )}
-             </div>
-          </div>
-          
-          {/* Genre Tags (Desktop Only - Optional cleanup) */}
-          <div className="hidden md:flex gap-1 mb-4">
-             {topPick.item.genre?.slice(0, 3).map(g => (
-                <span key={g} className="text-plex-orange text-xs font-medium uppercase tracking-wider px-1 border border-plex-orange/20 rounded">
-                  {g}
-                </span>
-             ))}
-          </div>
-
-          {/* AI Reason - Moved Next to Poster on Mobile */}
-          <div className="bg-plex-orange/10 border-l-2 md:border-l-4 border-plex-orange p-2 md:p-4 rounded-r-lg">
-            <p className="text-xs md:text-lg text-white italic font-light line-clamp-4 md:line-clamp-none leading-snug">
-                "{topPick.reason}"
-            </p>
-          </div>
+             
+             {/* Synopsis */}
+             <p className="text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+                 {topPick.item.summary}
+             </p>
         </div>
 
-        {/* 3. SYNOPSIS BLOCK (Bottom / Flow) */}
-        <div className="col-span-12 md:col-span-8 lg:col-span-9 relative z-10 mt-1 md:mt-0">
-          <p className="text-gray-400 leading-relaxed text-xs md:text-base">
-            {topPick.item.summary}
-          </p>
+        {/* --- DESKTOP LAYOUT (Original) --- */}
+        <div className="hidden md:grid grid-cols-12 gap-10 relative z-10 p-0 md:p-4">
+            {/* LEFT COLUMN: Title & Poster */}
+            <div className="col-span-4 flex flex-col gap-4">
+              {/* Title Area */}
+              <div>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white leading-tight">
+                  {serverIdentifier ? (
+                     <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange transition-colors">
+                       {topPick.item.title}
+                     </a>
+                  ) : (
+                     topPick.item.title
+                  )}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 mt-2 text-gray-400 text-sm md:text-base">
+                   <span>{topPick.item.year}</span>
+                   <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                   <span className="uppercase tracking-wider text-xs font-bold">{topPick.item.type === 'show' ? 'TV Series' : 'Movie'}</span>
+                   {topPick.item.duration && (
+                      <>
+                        <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                        <span>{formatDuration(topPick.item.duration)}</span>
+                      </>
+                   )}
+                </div>
+              </div>
+
+              {/* Poster */}
+              <div className="w-full max-w-[300px] md:max-w-none mx-auto md:mx-0 shadow-2xl rounded-xl overflow-hidden bg-gray-900 ring-1 ring-white/10 relative group">
+                  {serverIdentifier ? (
+                    <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="block relative aspect-[2/3]">
+                        {topPick.item.thumb ? (
+                          <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        ) : (
+                          <div className="w-full h-full bg-plex-slate flex items-center justify-center text-gray-600 text-xs">No Poster</div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="bg-plex-orange text-black font-bold px-4 py-2 rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">Watch Now</span>
+                        </div>
+                    </a>
+                  ) : (
+                    <div className="aspect-[2/3] relative">
+                        {topPick.item.thumb ? (
+                          <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-plex-slate flex items-center justify-center text-gray-600 text-xs">No Poster</div>
+                        )}
+                    </div>
+                  )}
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: AI Analysis & Info */}
+            <div className="col-span-8 flex flex-col relative z-10 pt-4">
+               
+               {/* AI Reason - Main Focus */}
+               <div className="flex-1 flex flex-col justify-start">
+                  <div className="bg-plex-orange/10 border-l-4 border-plex-orange p-6 md:p-8 rounded-r-2xl mb-6 backdrop-blur-sm">
+                     <h3 className="text-plex-orange text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        Why you should watch this
+                     </h3>
+                     <p className="text-xl md:text-3xl text-white font-serif italic leading-relaxed md:leading-normal">
+                        "{topPick.reason}"
+                     </p>
+                  </div>
+               </div>
+
+               {/* Metadata Badges */}
+               <div className="flex flex-wrap items-center gap-3 mb-6">
+                    {topPick.imdbRating && (
+                        <a href={getSearchUrl('imdb', topPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#f5c518] text-black rounded-md font-bold text-sm flex items-center gap-1 hover:brightness-110">
+                          IMDb {topPick.imdbRating}
+                        </a>
+                    )}
+                    {topPick.rottenTomatoesScore && (
+                        <a href={getSearchUrl('rt', topPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#fa320a] text-white rounded-md font-bold text-sm flex items-center gap-1 hover:brightness-110">
+                          RT {topPick.rottenTomatoesScore}
+                        </a>
+                    )}
+                    {topPick.item.genre?.map(g => (
+                        <span key={g} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-md text-gray-300 text-xs uppercase tracking-wider font-bold">
+                            {g}
+                        </span>
+                    ))}
+               </div>
+
+               {/* Synopsis */}
+               <div className="bg-black/20 rounded-xl p-5 md:p-6 border border-white/5">
+                  <h4 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Synopsis</h4>
+                  <p className="text-gray-300 leading-relaxed text-base md:text-lg">
+                    {topPick.item.summary}
+                  </p>
+               </div>
+            </div>
         </div>
 
       </div>
 
       {/* Alternatives List */}
       {others.length > 0 && (
-        <div className="border-t border-white/10 pt-5 mt-4">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6 px-0 md:px-0">
+        <div className="border-t border-white/10 pt-8 px-4 md:px-0">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <h3 className="text-xl font-display font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-0">More Picks</h3>
             
             <div className="flex items-center gap-3">
@@ -287,35 +349,29 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
             {others.map((rec) => (
               <div 
                 key={rec.item.ratingKey} 
-                className="flex gap-3 md:gap-4 p-2 md:p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group relative cursor-pointer"
+                className="flex gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group relative cursor-pointer border border-white/5 hover:border-white/10"
               >
                 <div className="absolute inset-0 z-0" onClick={() => setSelectedPick(rec)}></div>
-                <div className="w-20 aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative pointer-events-none">
+                <div className="w-24 aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative pointer-events-none shadow-lg">
                   {rec.item.thumb && <img src={rec.item.thumb} alt={rec.item.title} className="w-full h-full object-cover" />}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0 pointer-events-none">
+                <div className="flex-1 min-w-0 pointer-events-none flex flex-col">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-bold text-base md:text-lg text-white group-hover:text-plex-orange transition-colors truncate pr-2">{rec.item.title}</h4>
-                    <span className="text-[10px] md:text-xs text-gray-500 font-mono whitespace-nowrap mt-1">{rec.item.year}</span>
+                    <h4 className="font-bold text-lg text-white group-hover:text-plex-orange transition-colors truncate pr-2">{rec.item.title}</h4>
                   </div>
-                  <div className="flex items-center gap-1.5 md:gap-3 text-sm mb-2 mt-1 flex-wrap pointer-events-auto relative z-10">
-                     <span className="text-plex-orange font-bold whitespace-nowrap text-[10px] md:text-xs">{Math.round(rec.score)}% Match</span>
-                     {rec.imdbRating && (
-                        <a href={getSearchUrl('imdb', rec.item.title)} target="_blank" rel="noopener noreferrer" className="text-[#f5c518] font-bold text-[10px] md:text-xs whitespace-nowrap hover:underline">
-                          IMDb {rec.imdbRating}
-                        </a>
-                     )}
-                     {rec.rottenTomatoesScore && (
-                       <a href={getSearchUrl('rt', rec.item.title)} target="_blank" rel="noopener noreferrer" className="text-[#fa320a] font-bold text-[10px] md:text-xs whitespace-nowrap hover:underline">
-                         RT {rec.rottenTomatoesScore}
-                       </a>
-                     )}
-                     <span className="text-gray-500 text-[10px] md:text-xs whitespace-nowrap">• {formatDuration(rec.item.duration)}</span>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                     <span>{rec.item.year}</span>
+                     <span>•</span>
+                     <span>{formatDuration(rec.item.duration)}</span>
+                     {rec.imdbRating && <span className="text-[#f5c518] font-bold ml-1">IMDb {rec.imdbRating}</span>}
                   </div>
-                  <p className="text-gray-400 text-xs md:text-sm line-clamp-2 italic">"{rec.reason}"</p>
+                  <div className="flex items-center gap-2 mb-2">
+                     <span className="text-plex-orange font-bold text-xs bg-plex-orange/10 px-2 py-0.5 rounded border border-plex-orange/20">{Math.round(rec.score)}% Match</span>
+                  </div>
+                  <p className="text-gray-300 text-sm italic line-clamp-2 mt-auto">"{rec.reason}"</p>
                 </div>
               </div>
             ))}
@@ -324,7 +380,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       )}
 
       {/* Support Card */}
-      <div className="mt-6 border border-white/10 bg-plex-slate/40 backdrop-blur-md rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
+      <div className="mt-8 mx-4 md:mx-0 border border-white/10 bg-plex-slate/40 backdrop-blur-md rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
          <div className="absolute inset-0 bg-gradient-to-r from-plex-orange/5 to-transparent opacity-100"></div>
          <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
@@ -368,23 +424,13 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                       {serverIdentifier ? (
                         <>
                           <a 
-                            href={isMobile ? getPlexAppLink(selectedPick.item.ratingKey) : getPlexWebLink(selectedPick.item.key)} 
-                            target={isMobile ? undefined : "_blank"} 
-                            rel={isMobile ? undefined : "noopener noreferrer"} 
+                            href={getPlexLink(selectedPick.item.key)} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
                             className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
                           >
                             Watch on Plex
                           </a>
-                          {isMobile && (
-                            <a 
-                              href={getPlexWebLink(selectedPick.item.key)} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-center text-gray-500 text-xs hover:text-white"
-                            >
-                              Or open in Web Browser
-                            </a>
-                          )}
                         </>
                       ) : (<div className="text-center text-gray-500 text-xs italic">(Connect to Plex to watch)</div>)}
                   </div>

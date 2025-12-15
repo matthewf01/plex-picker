@@ -53,6 +53,13 @@ export const Decoder: React.FC<DecoderProps> = ({ onDecode, loading }) => {
   const [history, setHistory] = useState<string>(HISTORY_OPTIONS[0].id);
   const [vibe, setVibe] = useState<string>(VIBE_OPTIONS[0].id);
   
+  // Force reset to defaults on mount (redundant safety for "page load" requirement)
+  useEffect(() => {
+    setType(TYPE_OPTIONS[0].id);
+    setHistory(HISTORY_OPTIONS[0].id);
+    setVibe(VIBE_OPTIONS[0].id);
+  }, []);
+  
   // Responsive check
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {

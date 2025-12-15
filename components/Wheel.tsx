@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 export interface WheelOption {
   id: string;
@@ -22,7 +22,7 @@ const V_ITEM_HEIGHT = 48;
 const V_SPACER = (V_CONTAINER_HEIGHT / 2) - (V_ITEM_HEIGHT / 2);
 
 // HORIZONTAL CONSTANTS
-const H_CONTAINER_HEIGHT = 48; // Slightly taller for better touch target
+const H_CONTAINER_HEIGHT = 48;
 const H_ITEM_WIDTH = 160;
 
 export const Wheel: React.FC<WheelProps> = ({ 
@@ -39,59 +39,52 @@ export const Wheel: React.FC<WheelProps> = ({
   // State refs for swipe detection
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const hasSpun = useRef(false);
+  const isInitialized = useRef(false);
   
   const isHorizontal = orientation === 'horizontal';
   const ITEM_SIZE = isHorizontal ? H_ITEM_WIDTH : V_ITEM_HEIGHT;
 
-  // Sync Scroll with Selection
+  // Initialization & Sync Effect
   useEffect(() => {
-    if (containerRef.current) {
-      const index = options.findIndex(o => o.id === selected);
-      if (index === -1) return;
+    if (!containerRef.current) return;
 
-      const scrollToTarget = (behavior: ScrollBehavior = 'smooth') => {
-        if (!containerRef.current) return;
-        
-        let targetPos = 0;
-        
-        if (isHorizontal) {
-           // For horizontal, we are using index-based snapping.
-           // Target is simply index * width
-           targetPos = index * ITEM_SIZE;
-           
-           // Force scroll because we disabled overflow
-           containerRef.current.scrollTo({ left: targetPos, behavior });
-        } else {
-           // Vertical keeps native scrolling behavior
-           targetPos = index * ITEM_SIZE;
-           
-           const currentPos = containerRef.current.scrollTop;
-           if (Math.abs(currentPos - targetPos) > 2) {
-             containerRef.current.scrollTo({ top: targetPos, behavior });
-           }
-        }
-      };
-
-      // Intro Spin Animation (Vertical Only)
-      if (onSpin && !hasSpun.current && !isHorizontal) {
-        hasSpun.current = true;
-        containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        setTimeout(() => {
-             scrollToTarget();
-        }, 100);
+    const index = options.findIndex(o => o.id === selected);
+    // If selected ID isn't found, default to 0
+    const targetIndex = index >= 0 ? index : 0;
+    
+    const scrollToTarget = (behavior: ScrollBehavior = 'smooth') => {
+      if (!containerRef.current) return;
+      
+      let targetPos = 0;
+      if (isHorizontal) {
+         // Horizontal: Simple Offset
+         targetPos = targetIndex * ITEM_SIZE;
+         containerRef.current.scrollTo({ left: targetPos, behavior });
       } else {
-        // Fix for mobile layout glitch: sometimes browser needs a tick to calculate widths correctly
-        // especially when switching from hidden/vertical to horizontal
-        if (isHorizontal) {
-          setTimeout(() => scrollToTarget('auto'), 0); // Immediate instant scroll on mount/change
-          setTimeout(() => scrollToTarget('smooth'), 50); // Ensure it sticks
-        } else {
-          scrollToTarget();
-        }
+         // Vertical: Simple Offset (Spacers handle centering)
+         targetPos = targetIndex * ITEM_SIZE;
+         containerRef.current.scrollTo({ top: targetPos, behavior });
       }
+    };
+
+    // FORCE Initial Scroll Position
+    // This fixes the "defaulting to last" or "not centered" bug by ensuring 
+    // the scroll position is strictly set on mount before any painting anomalies occur.
+    if (!isInitialized.current) {
+        // Instant jump to correct position on mount
+        scrollToTarget('auto');
+        
+        // Double tap: Ensure it sticks after layout paint
+        requestAnimationFrame(() => {
+           scrollToTarget('auto');
+           isInitialized.current = true;
+        });
+    } else {
+        // Normal update
+        scrollToTarget('smooth');
     }
-  }, [selected, options, onSpin, isHorizontal, ITEM_SIZE]);
+
+  }, [selected, options, isHorizontal, ITEM_SIZE]);
 
   // Vertical Scroll Handler (Desktop)
   const handleScroll = () => {
@@ -105,6 +98,7 @@ export const Wheel: React.FC<WheelProps> = ({
     if (centerIndex >= 0 && centerIndex < options.length) {
       const newId = options[centerIndex].id;
       if (newId !== selected) {
+        // Debounce vibration slightly? No, wheel feel is better instant.
         if (navigator.vibrate) navigator.vibrate(5);
         onChange(newId);
       }
