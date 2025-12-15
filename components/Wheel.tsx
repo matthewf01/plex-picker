@@ -36,10 +36,16 @@ export const Wheel: React.FC<WheelProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // State refs for swipe detection
+  // State refs for swipe/drag detection
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const isInitialized = useRef(false);
+  
+  // Mouse Drag State
+  const isDragging = useRef(false);
+  const startY = useRef(0);
+  const startScrollTop = useRef(0);
+  const dragDistance = useRef(0);
   
   const isHorizontal = orientation === 'horizontal';
   const ITEM_SIZE = isHorizontal ? H_ITEM_WIDTH : V_ITEM_HEIGHT;
@@ -47,6 +53,9 @@ export const Wheel: React.FC<WheelProps> = ({
   // Initialization & Sync Effect
   useEffect(() => {
     if (!containerRef.current) return;
+
+    // Skip auto-scrolling if user is actively dragging
+    if (isDragging.current) return;
 
     const index = options.findIndex(o => o.id === selected);
     // If selected ID isn't found, default to 0
@@ -68,8 +77,6 @@ export const Wheel: React.FC<WheelProps> = ({
     };
 
     // FORCE Initial Scroll Position
-    // This fixes the "defaulting to last" or "not centered" bug by ensuring 
-    // the scroll position is strictly set on mount before any painting anomalies occur.
     if (!isInitialized.current) {
         // Instant jump to correct position on mount
         scrollToTarget('auto');
@@ -86,7 +93,7 @@ export const Wheel: React.FC<WheelProps> = ({
 
   }, [selected, options, isHorizontal, ITEM_SIZE]);
 
-  // Vertical Scroll Handler (Desktop)
+  // Vertical Scroll Handler (Desktop/Native)
   const handleScroll = () => {
     if (isHorizontal || !containerRef.current) return;
     
@@ -148,6 +155,48 @@ export const Wheel: React.FC<WheelProps> = ({
     touchEndX.current = null;
   };
 
+  // MOUSE DRAG HANDLERS (Vertical/Desktop)
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (isHorizontal || !containerRef.current) return;
+    isDragging.current = true;
+    startY.current = e.clientY;
+    startScrollTop.current = containerRef.current.scrollTop;
+    dragDistance.current = 0;
+    
+    // Disable snap momentarily for smooth dragging
+    containerRef.current.style.scrollSnapType = 'none';
+    containerRef.current.style.cursor = 'grabbing';
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+    e.preventDefault();
+    const currentY = e.clientY;
+    const delta = currentY - startY.current;
+    dragDistance.current = Math.abs(delta);
+    
+    containerRef.current.scrollTop = startScrollTop.current - delta;
+  };
+
+  const onMouseUp = () => {
+    if (!isDragging.current || !containerRef.current) return;
+    isDragging.current = false;
+    
+    // Re-enable snap to settle selection
+    containerRef.current.style.scrollSnapType = 'y mandatory';
+    containerRef.current.style.cursor = 'grab';
+
+    // Ensure we snap to the nearest item (or current selection) if snap didn't catch
+    const index = options.findIndex(o => o.id === selected);
+    if (index >= 0) {
+       containerRef.current.scrollTo({ top: index * ITEM_SIZE, behavior: 'smooth' });
+    }
+  };
+
+  const onMouseLeave = () => {
+    if (isDragging.current) onMouseUp();
+  };
+
   // Resolve Arrow Colors
   const getArrowColorClass = () => {
     switch(accentColor) {
@@ -206,9 +255,15 @@ export const Wheel: React.FC<WheelProps> = ({
         <div 
           ref={containerRef}
           onScroll={handleScroll}
+          // Touch (Mobile)
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
+          // Mouse (Desktop Drag)
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseLeave}
           className={`
             w-full h-full relative z-20
             ${isHorizontal ? 'flex flex-row items-center overflow-hidden touch-pan-y' : 'overflow-auto hide-scrollbar snap-y snap-mandatory cursor-grab'}
@@ -225,11 +280,13 @@ export const Wheel: React.FC<WheelProps> = ({
             <div 
               key={opt.id}
               onClick={() => {
-                   // Click to select
-                   onChange(opt.id);
+                   // Only trigger selection if we haven't dragged significantly (prevent accidental clicks while dragging)
+                   if (dragDistance.current < 6) {
+                      onChange(opt.id);
+                   }
               }}
               className={`
-                flex items-center justify-center transition-all duration-300 flex-shrink-0
+                flex items-center justify-center transition-all duration-300 flex-shrink-0 cursor-pointer
                 ${isHorizontal ? 'h-full' : 'snap-center w-full'}
                 ${selected === opt.id ? 'text-white font-bold scale-110 opacity-100' : 'text-gray-300 font-medium scale-90 opacity-60'}
               `}
