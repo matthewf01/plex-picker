@@ -46,9 +46,20 @@ export const Wheel: React.FC<WheelProps> = ({
   const startY = useRef(0);
   const startScrollTop = useRef(0);
   const dragDistance = useRef(0);
+
+  // Scroll Lock State (Fixes stuttering)
+  const isProgrammaticScroll = useRef(false);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const isHorizontal = orientation === 'horizontal';
   const ITEM_SIZE = isHorizontal ? H_ITEM_WIDTH : V_ITEM_HEIGHT;
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+  }, []);
 
   // Initialization & Sync Effect
   useEffect(() => {
@@ -64,6 +75,15 @@ export const Wheel: React.FC<WheelProps> = ({
     const scrollToTarget = (behavior: ScrollBehavior = 'smooth') => {
       if (!containerRef.current) return;
       
+      // LOCK: Prevent handleScroll from triggering onChange during this animation
+      // This breaks the feedback loop where intermediate scroll positions reset the selection
+      isProgrammaticScroll.current = true;
+
+      // DISABLE SNAP: Prevent CSS snap from fighting JS smooth scroll on vertical lists
+      if (!isHorizontal) {
+          containerRef.current.style.scrollSnapType = 'none';
+      }
+      
       let targetPos = 0;
       if (isHorizontal) {
          // Horizontal: Simple Offset
@@ -74,6 +94,18 @@ export const Wheel: React.FC<WheelProps> = ({
          targetPos = targetIndex * ITEM_SIZE;
          containerRef.current.scrollTo({ top: targetPos, behavior });
       }
+
+      // UNLOCK: Restore snap and event handling after animation
+      // 600ms covers standard browser smooth scroll duration (~300-500ms)
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      const delay = behavior === 'auto' ? 50 : 600;
+
+      scrollTimeout.current = setTimeout(() => {
+          isProgrammaticScroll.current = false;
+          if (containerRef.current && !isHorizontal) {
+             containerRef.current.style.scrollSnapType = 'y mandatory';
+          }
+      }, delay);
     };
 
     // FORCE Initial Scroll Position
@@ -95,7 +127,10 @@ export const Wheel: React.FC<WheelProps> = ({
 
   // Vertical Scroll Handler (Native Scroll Event)
   const handleScroll = () => {
-    if (isHorizontal || !containerRef.current) return;
+    // IGNORE events if we are programmatically animating.
+    // This prevents the "stutter" where the scroll event fires mid-animation
+    // and incorrectly updates the state to the previous item.
+    if (isHorizontal || !containerRef.current || isProgrammaticScroll.current) return;
     
     const scrollT = containerRef.current.scrollTop;
     let centerIndex = Math.round(scrollT / ITEM_SIZE);
