@@ -25,10 +25,10 @@ The application flows through a linear state machine defined in `types.ts`:
     *   Renders `Setup.tsx`.
     *   Outputs: `PlexServerConfig` (URL, Token, MachineID).
 2.  **LOADING**:
-    *   Transitional state while `plexService` fetches library metadata.
-    *   Stores result in `libraryItems` state array.
+    *   Transitional state while validating the connection to the selected Plex Server.
 3.  **DECODER**:
     *   Main interactive state. User selects filters.
+    *   **Background Process:** Triggers `loadLibraryData` to fetch and index content from the Plex Server. The UI displays a "Scanning Library..." state until this completes.
     *   Renders `Decoder.tsx`.
 4.  **RESULTS**:
     *   AI has returned recommendations.
@@ -53,3 +53,16 @@ The application flows through a linear state machine defined in `types.ts`:
 ## Security & Privacy
 *   **Tokens:** Plex Auth Tokens (`X-Plex-Token`) are stored in `localStorage`. They are never sent to any server other than the user's specific Plex Server or `plex.tv`.
 *   **AI Privacy:** Only metadata (Title, Year, Genre, Summary) is sent to Google Gemini. No user watch history or personal identifiers are transmitted to Google.
+
+## Development & Deployment
+
+### Versioning Strategy
+We utilize a **Calendar Versioning (CalVer)** system to track builds and deployments visible in the UI.
+
+*   **Format:** `YYMMDD.NN`
+    *   `YYMMDD`: The date of the build (e.g., `251215` for Dec 15, 2025).
+    *   `NN`: Daily revision number (starting at `01`).
+*   **Directives:** 
+    1.  The `BUILD_NUMBER` constant in `src/App.tsx` is the source of truth for the UI.
+    2.  The `README.md` header must be manually updated to match the code before deployment.
+    3.  `package.json` version tracks major semantic releases (e.g., 1.0.0, 2.0.0) rather than daily builds.

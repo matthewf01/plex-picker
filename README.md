@@ -1,7 +1,7 @@
 
 # PlexPicker 🎬
 
-**Current Build:** 250222.27  
+**Current Build:** 250222.28  
 **Tech Stack:** React 19, TypeScript, Vite, Tailwind CSS, Google Gemini API
 
 ## Overview
@@ -12,7 +12,7 @@ PlexPicker is a client-side Single Page Application (SPA) that acts as a "Cinema
 *   **Plex Authentication:** Implements the official Plex.tv PIN flow (OAuth2-like) to discover servers.
 *   **Smart Connection Racing:** Automatically tests local, remote, and relay connections to find the fastest reachable route to the media server, handling mixed-content (HTTP/HTTPS) restrictions.
 *   **AI-Powered Curation:** Uses `gemini-2.5-flash-lite` to analyze library metadata against complex mood definitions (e.g., "Mind Bending", "Nostalgia").
-*   **Wheel Interface:** A custom touch-responsive scroll wheel component for selecting Format, History, and Vibe.
+*   **Wheel Interface:** A custom touch-responsive scroll wheel component for selecting Format, History, and Vibe. On desktop, supports drag-to-scroll and click-above/below to step through options.
 
 ## Getting Started
 
