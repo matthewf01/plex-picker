@@ -14,6 +14,19 @@ type SortOption = 'match' | 'imdb' | 'rt' | 'year' | 'length';
 export const Results: React.FC<ResultsProps> = ({ recommendations, selection, onReset, serverIdentifier }) => {
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [selectedPick, setSelectedPick] = useState<Recommendation | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect Mobile/Tablet Devices to prefer Native App Deep Links
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      // Regex covers iOS and Android devices
+      if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent)) {
+        setIsMobile(true);
+      }
+    };
+    checkMobile();
+  }, []);
 
   const topPick = recommendations[0];
   let others = recommendations.slice(1);
@@ -72,12 +85,19 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
     return '#';
   };
 
-  // Generate Web Link (Universal)
-  // This acts as a Universal Link on mobile devices (iOS/Android) if the app is installed,
-  // otherwise it opens the web interface.
+  // Generate Deep Link
   const getPlexLink = (key: string) => {
     if (!serverIdentifier) return undefined;
     const encodedKey = encodeURIComponent(key);
+    
+    // On Mobile, use the plex:// scheme to force the native app to open.
+    // This avoids the issue where the browser opens the Plex Web App which may 
+    // fail to find the item if not authenticated in the specific browser session.
+    if (isMobile) {
+        return `plex://server/${serverIdentifier}/details?key=${encodedKey}`;
+    }
+
+    // On Desktop, fallback to the standard Web App URL.
     return `https://app.plex.tv/desktop/#!/server/${serverIdentifier}/details?key=${encodedKey}`;
   };
 
@@ -137,7 +157,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                 <div className="w-32 flex-shrink-0">
                     <div className="aspect-[2/3] w-full rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-gray-900 relative">
                         {serverIdentifier ? (
-                            <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                            <a href={getPlexLink(topPick.item.key)} className="block w-full h-full">
                                 {topPick.item.thumb ? (
                                     <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
                                 ) : (
@@ -160,7 +180,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                 <div className="flex-1 min-w-0 flex flex-col justify-start pt-1">
                     <h1 className="text-2xl font-display font-bold text-white leading-tight mb-2">
                          {serverIdentifier ? (
-                            <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange">
+                            <a href={getPlexLink(topPick.item.key)} className="hover:text-plex-orange">
                                 {topPick.item.title}
                             </a>
                          ) : (
@@ -209,11 +229,9 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
              {serverIdentifier && (
                 <a 
                     href={getPlexLink(topPick.item.key)} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
                     className="w-full block text-center bg-plex-orange text-black font-bold py-3 rounded-xl shadow-lg shadow-plex-orange/20 uppercase tracking-widest text-sm"
                 >
-                    Watch on Plex
+                    {isMobile ? 'Open in Plex App' : 'Watch on Plex'}
                 </a>
              )}
              
@@ -425,11 +443,9 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                         <>
                           <a 
                             href={getPlexLink(selectedPick.item.key)} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
                             className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
                           >
-                            Watch on Plex
+                            {isMobile ? 'Open in Plex App' : 'Watch on Plex'}
                           </a>
                         </>
                       ) : (<div className="text-center text-gray-500 text-xs italic">(Connect to Plex to watch)</div>)}

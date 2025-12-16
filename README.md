@@ -1,7 +1,7 @@
 
 # PlexPicker 🎬
 
-**Current Build:** 251215.01  
+**Current Build:** 251215.02  
 **Tech Stack:** React 19, TypeScript, Vite, Tailwind CSS, Google Gemini API
 
 ## Overview
