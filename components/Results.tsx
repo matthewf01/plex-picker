@@ -416,44 +416,64 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
 
       {/* Details Modal */}
       {selectedPick && (
-        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 pt-24 md:p-4">
-           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedPick(null)}></div>
-           {/* Modal Container: On mobile, overflow-y-auto allows full card scrolling. On desktop, we clip to support split-pane scrolling. */}
-           <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto md:overflow-hidden rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row">
-               <button onClick={() => setSelectedPick(null)} className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors">✕</button>
-               <div className="w-full md:w-2/5 relative h-64 md:h-auto flex-shrink-0">
-                 {selectedPick.item.thumb ? <img src={selectedPick.item.thumb} alt={selectedPick.item.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">No Poster</div>}
-               </div>
-               <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col">
-                  <div className="mb-1">
-                    <h2 className="text-3xl font-display font-bold text-white leading-tight">{selectedPick.item.title}</h2>
-                    <div className="text-gray-400 text-sm mt-1">{selectedPick.item.year} • {selectedPick.item.type === 'show' ? 'TV Series' : 'Movie'} • {formatDuration(selectedPick.item.duration)}</div>
-                  </div>
-                  <div className="flex gap-3 my-4">
-                     {selectedPick.imdbRating && <a href={getSearchUrl('imdb', selectedPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs hover:brightness-110">IMDb {selectedPick.imdbRating}</a>}
-                     {selectedPick.rottenTomatoesScore && <a href={getSearchUrl('rt', selectedPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs hover:brightness-110">RT {selectedPick.rottenTomatoesScore}</a>}
-                     <span className="px-2 py-1 bg-plex-orange/20 text-plex-orange border border-plex-orange/20 rounded font-bold text-xs">{Math.round(selectedPick.score)}% Match</span>
-                  </div>
-                  {/* Text Container: On mobile, let it grow naturally (no scroll). On desktop, constrain and scroll internally. */}
-                  <div className="md:flex-1 md:overflow-y-auto md:pr-2 custom-scrollbar">
-                     <p className="text-plex-orange italic mb-4 text-sm font-medium">"{selectedPick.reason}"</p>
-                     <p className="text-gray-300 text-sm leading-relaxed mb-6">{selectedPick.item.summary}</p>
-                     <div className="flex flex-wrap gap-2 mb-6">
-                        {selectedPick.item.genre?.map(g => (<span key={g} className="text-[10px] uppercase tracking-wider bg-white/5 px-2 py-1 rounded text-gray-400">{g}</span>))}
-                     </div>
-                  </div>
-                  <div className="mt-auto pt-4 border-t border-white/5 flex flex-col gap-2 flex-shrink-0">
-                      {serverIdentifier ? (
-                        <>
-                          <a 
-                            href={getPlexLink(selectedPick.item.key)} 
-                            className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
-                          >
-                            {isMobile ? 'Open in Plex App' : 'Watch on Plex'}
-                          </a>
-                        </>
-                      ) : (<div className="text-center text-gray-500 text-xs italic">(Connect to Plex to watch)</div>)}
-                  </div>
+        <div className="fixed inset-0 z-[100] overflow-y-auto custom-scrollbar">
+           {/* Backdrop - Fixed */}
+           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedPick(null)}></div>
+           
+           {/* Scroll Content Wrapper */}
+           <div className="flex min-h-full items-start md:items-center justify-center p-4">
+               {/* Modal Card */}
+               <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row md:max-h-[90vh] md:overflow-hidden mt-20 mb-8 md:my-0">
+                   
+                   <button onClick={() => setSelectedPick(null)} className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors">✕</button>
+                   
+                   {/* Image - Mobile: Aspect Ratio, Desktop: Fixed Width */}
+                   <div className="w-full md:w-2/5 relative h-64 md:h-auto flex-shrink-0 bg-gray-900">
+                     {selectedPick.item.thumb ? (
+                        <img src={selectedPick.item.thumb} alt={selectedPick.item.title} className="w-full h-full object-cover" />
+                     ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500">No Poster</div>
+                     )}
+                   </div>
+
+                   {/* Content */}
+                   <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col">
+                      {/* Header */}
+                      <div className="mb-1">
+                        <h2 className="text-3xl font-display font-bold text-white leading-tight">{selectedPick.item.title}</h2>
+                        <div className="text-gray-400 text-sm mt-1">{selectedPick.item.year} • {selectedPick.item.type === 'show' ? 'TV Series' : 'Movie'} • {formatDuration(selectedPick.item.duration)}</div>
+                      </div>
+                      
+                      {/* Badges */}
+                      <div className="flex gap-3 my-4">
+                         {selectedPick.imdbRating && <a href={getSearchUrl('imdb', selectedPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#f5c518] text-black rounded font-bold text-xs hover:brightness-110">IMDb {selectedPick.imdbRating}</a>}
+                         {selectedPick.rottenTomatoesScore && <a href={getSearchUrl('rt', selectedPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs hover:brightness-110">RT {selectedPick.rottenTomatoesScore}</a>}
+                         <span className="px-2 py-1 bg-plex-orange/20 text-plex-orange border border-plex-orange/20 rounded font-bold text-xs">{Math.round(selectedPick.score)}% Match</span>
+                      </div>
+                      
+                      {/* Text Container - Scrollable on Desktop, auto on mobile */}
+                      <div className="md:flex-1 md:overflow-y-auto md:pr-2 custom-scrollbar">
+                         <p className="text-plex-orange italic mb-4 text-sm font-medium">"{selectedPick.reason}"</p>
+                         <p className="text-gray-300 text-sm leading-relaxed mb-6">{selectedPick.item.summary}</p>
+                         <div className="flex flex-wrap gap-2 mb-6">
+                            {selectedPick.item.genre?.map(g => (<span key={g} className="text-[10px] uppercase tracking-wider bg-white/5 px-2 py-1 rounded text-gray-400">{g}</span>))}
+                         </div>
+                      </div>
+                      
+                      {/* Button Area */}
+                      <div className="mt-auto pt-4 border-t border-white/5 flex flex-col gap-2 flex-shrink-0">
+                          {serverIdentifier ? (
+                            <>
+                              <a 
+                                href={getPlexLink(selectedPick.item.key)} 
+                                className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
+                              >
+                                {isMobile ? 'Open in Plex App' : 'Watch on Plex'}
+                              </a>
+                            </>
+                          ) : (<div className="text-center text-gray-500 text-xs italic">(Connect to Plex to watch)</div>)}
+                      </div>
+                   </div>
                </div>
            </div>
         </div>
