@@ -11,7 +11,7 @@ import { GeminiService } from './services/geminiService';
 import { AppState, PlexServerConfig, PlexMediaItem, DecoderSelection, Recommendation, OverlayState } from './types';
 
 const STORAGE_KEY = 'plex_config';
-const BUILD_NUMBER = '251215.09';
+const BUILD_NUMBER = '251215.11';
 
 function App() {
   const [appState, setAppState] = useState<AppState>(AppState.SETUP);

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Recommendation, DecoderSelection } from '../types';
+import { Recommendation, DecoderSelection, PlexMediaItem } from '../types';
 
 interface ResultsProps {
   recommendations: Recommendation[];
@@ -14,13 +14,12 @@ type SortOption = 'match' | 'imdb' | 'rt' | 'year' | 'length';
 export const Results: React.FC<ResultsProps> = ({ recommendations, selection, onReset, serverIdentifier }) => {
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [selectedPick, setSelectedPick] = useState<Recommendation | null>(null);
+  
+  // Responsive check
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    // Detect Mobile/Tablet Devices for layout adjustments
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      // Regex covers iOS and Android devices
       if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent)) {
         setIsMobile(true);
       }
@@ -86,19 +85,22 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   };
 
   // Generate Deep Link
-  const getPlexLink = (key: string) => {
+  const getPlexLink = (item: PlexMediaItem) => {
     if (!serverIdentifier) return undefined;
-    const encodedKey = encodeURIComponent(key);
     
-    // Mobile Strategy: Use standard 'plex://server' details scheme
-    // The previous 'preplay' command proved unreliable on some devices.
-    // This format mirrors the web app structure but uses the custom protocol.
+    // Mobile Strategy: 'plex://preplay' with ID
+    // We use the 'ratingKey' (ID) instead of the 'key' (Path).
+    // The 'plex://preplay' command is a direct instruction to the mobile app 
+    // to open the preplay screen for a specific ID. This avoids the 
+    // "Universal Link" fragment loss issue where the app opens but forgets the path.
     if (isMobile) {
-        return `plex://server/${serverIdentifier}/details?key=${encodedKey}`;
+        return `plex://preplay/?metadataKey=${item.ratingKey}&server=${serverIdentifier}`;
     }
 
-    // Desktop Strategy: Universal App Link
-    // Works reliably in desktop browsers and PWA contexts.
+    // Desktop Strategy: Universal Web Link with Path
+    // Desktop browsers handle the fragment identifier (#!/...) correctly.
+    // We use the full path key here as it is the standard for the Web Client.
+    const encodedKey = encodeURIComponent(item.key);
     return `https://app.plex.tv/desktop/#!/server/${serverIdentifier}/details?key=${encodedKey}`;
   };
 
@@ -158,7 +160,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                 <div className="w-32 flex-shrink-0">
                     <div className="aspect-[2/3] w-full rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-gray-900 relative">
                         {serverIdentifier ? (
-                            <a href={getPlexLink(topPick.item.key)} className="block w-full h-full">
+                            <a href={getPlexLink(topPick.item)} target={isMobile ? undefined : "_blank"} rel="noopener noreferrer" className="block w-full h-full">
                                 {topPick.item.thumb ? (
                                     <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover" />
                                 ) : (
@@ -181,7 +183,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                 <div className="flex-1 min-w-0 flex flex-col justify-start pt-1">
                     <h1 className="text-2xl font-display font-bold text-white leading-tight mb-2">
                          {serverIdentifier ? (
-                            <a href={getPlexLink(topPick.item.key)} className="hover:text-plex-orange">
+                            <a href={getPlexLink(topPick.item)} target={isMobile ? undefined : "_blank"} rel="noopener noreferrer" className="hover:text-plex-orange">
                                 {topPick.item.title}
                             </a>
                          ) : (
@@ -229,7 +231,9 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
              {/* Action Button */}
              {serverIdentifier && (
                 <a 
-                    href={getPlexLink(topPick.item.key)} 
+                    href={getPlexLink(topPick.item)}
+                    target={isMobile ? undefined : "_blank"}
+                    rel="noopener noreferrer"
                     className="w-full block text-center bg-plex-orange text-black font-bold py-3 rounded-xl shadow-lg shadow-plex-orange/20 uppercase tracking-widest text-sm"
                 >
                     {isMobile ? 'Open in Plex App' : 'Watch on Plex'}
@@ -250,7 +254,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
               <div>
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white leading-tight">
                   {serverIdentifier ? (
-                     <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange transition-colors">
+                     <a href={getPlexLink(topPick.item)} target="_blank" rel="noopener noreferrer" className="hover:text-plex-orange transition-colors">
                        {topPick.item.title}
                      </a>
                   ) : (
@@ -273,7 +277,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
               {/* Poster */}
               <div className="w-full max-w-[300px] md:max-w-none mx-auto md:mx-0 shadow-2xl rounded-xl overflow-hidden bg-gray-900 ring-1 ring-white/10 relative group">
                   {serverIdentifier ? (
-                    <a href={getPlexLink(topPick.item.key)} target="_blank" rel="noopener noreferrer" className="block relative aspect-[2/3]">
+                    <a href={getPlexLink(topPick.item)} target="_blank" rel="noopener noreferrer" className="block relative aspect-[2/3]">
                         {topPick.item.thumb ? (
                           <img src={topPick.item.thumb} alt={topPick.item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                         ) : (
@@ -464,7 +468,9 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                           {serverIdentifier ? (
                             <>
                               <a 
-                                href={getPlexLink(selectedPick.item.key)} 
+                                href={getPlexLink(selectedPick.item)}
+                                target={isMobile ? undefined : "_blank"}
+                                rel="noopener noreferrer"
                                 className="w-full block text-center bg-plex-orange hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
                               >
                                 {isMobile ? 'Open in Plex App' : 'Watch on Plex'}
