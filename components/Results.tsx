@@ -90,10 +90,16 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
     if (!serverIdentifier) return undefined;
     const encodedKey = encodeURIComponent(key);
     
-    // We utilize the universal app.plex.tv link.
-    // On mobile devices with the Plex app installed, this URL is intercepted (Universal Links / App Links)
-    // and opens the specific content directly in the app.
-    // The previous 'plex://' custom scheme is unreliable for deep navigation.
+    // Mobile Strategy: Use 'plex://preplay' command
+    // The 'preplay' endpoint is specifically designed to navigate the native app 
+    // to the details screen of a specific item (metadataKey) on a specific server.
+    // This bypasses the generic home screen navigation issues seen with other schemes.
+    if (isMobile) {
+        return `plex://preplay/?metadataKey=${encodedKey}&serverIdentifier=${serverIdentifier}`;
+    }
+
+    // Desktop Strategy: Universal App Link
+    // Works reliably in desktop browsers and PWA contexts.
     return `https://app.plex.tv/desktop/#!/server/${serverIdentifier}/details?key=${encodedKey}`;
   };
 
