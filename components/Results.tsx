@@ -17,7 +17,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Detect Mobile/Tablet Devices to prefer Native App Deep Links
+    // Detect Mobile/Tablet Devices for layout adjustments
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
       // Regex covers iOS and Android devices
@@ -90,14 +90,10 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
     if (!serverIdentifier) return undefined;
     const encodedKey = encodeURIComponent(key);
     
-    // On Mobile, use the plex:// scheme to force the native app to open.
-    // This avoids the issue where the browser opens the Plex Web App which may 
-    // fail to find the item if not authenticated in the specific browser session.
-    if (isMobile) {
-        return `plex://server/${serverIdentifier}/details?key=${encodedKey}`;
-    }
-
-    // On Desktop, fallback to the standard Web App URL.
+    // We utilize the universal app.plex.tv link.
+    // On mobile devices with the Plex app installed, this URL is intercepted (Universal Links / App Links)
+    // and opens the specific content directly in the app.
+    // The previous 'plex://' custom scheme is unreliable for deep navigation.
     return `https://app.plex.tv/desktop/#!/server/${serverIdentifier}/details?key=${encodedKey}`;
   };
 
@@ -115,14 +111,14 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
     <div className="w-full max-w-6xl mx-auto px-0 md:px-6 pt-0 pb-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
       
       {/* Back Button */}
-      <div className="w-full mb-1 flex justify-start px-4 md:px-0">
+      <div className="w-full mb-1 flex justify-start px-0 md:px-0">
         <button onClick={onReset} className="text-gray-400 hover:text-white flex items-center gap-2 transition-colors text-xs md:text-sm font-medium py-1 px-1 -ml-1">
           ← Start a New Search
         </button>
       </div>
 
       {/* Context Pills */}
-      <div className="flex flex-col items-center justify-center mb-4 md:mb-8 space-y-2 w-full px-4 md:px-0">
+      <div className="flex flex-col items-center justify-center mb-4 md:mb-8 space-y-2 w-full px-0 md:px-0">
          <div className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-500">Picked For You</div>
          <div className="flex flex-wrap items-center justify-center gap-2 w-full">
             <span className="font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-500/20 px-2 md:px-4 py-1 rounded-full text-xs md:text-sm whitespace-nowrap">
@@ -140,7 +136,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       </div>
 
       {/* Top Pick Header */}
-      <div className="flex justify-end mb-2 px-4 md:px-0">
+      <div className="flex justify-end mb-2 px-0 md:px-0">
         <div className="text-right">
            <span className="text-plex-orange uppercase tracking-widest text-xs md:text-sm font-bold block">Top Match ({Math.round(topPick.score)}% Match)</span>
         </div>
@@ -343,7 +339,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
 
       {/* Alternatives List */}
       {others.length > 0 && (
-        <div className="border-t border-white/10 pt-8 px-4 md:px-0">
+        <div className="border-t border-white/10 pt-8 px-0 md:px-0">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <h3 className="text-xl font-display font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-0">More Picks</h3>
             
@@ -363,7 +359,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-4">
             {others.map((rec) => (
               <div 
                 key={rec.item.ratingKey} 
@@ -378,7 +374,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                 </div>
                 <div className="flex-1 min-w-0 pointer-events-none flex flex-col">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-bold text-lg text-white group-hover:text-plex-orange transition-colors truncate pr-2">{rec.item.title}</h4>
+                    <h4 className="font-bold text-lg text-white group-hover:text-plex-orange transition-colors pr-2 leading-tight">{rec.item.title}</h4>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
                      <span>{rec.item.year}</span>
@@ -389,7 +385,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                   <div className="flex items-center gap-2 mb-2">
                      <span className="text-plex-orange font-bold text-xs bg-plex-orange/10 px-2 py-0.5 rounded border border-plex-orange/20">{Math.round(rec.score)}% Match</span>
                   </div>
-                  <p className="text-gray-300 text-sm italic line-clamp-2 mt-auto">"{rec.reason}"</p>
+                  <p className="text-gray-300 text-sm italic mt-2">"{rec.reason}"</p>
                 </div>
               </div>
             ))}
@@ -398,7 +394,7 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       )}
 
       {/* Support Card */}
-      <div className="mt-8 mx-4 md:mx-0 border border-white/10 bg-plex-slate/40 backdrop-blur-md rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
+      <div className="mt-8 mx-0 md:mx-0 border border-white/10 bg-plex-slate/40 backdrop-blur-md rounded-xl p-6 md:p-8 text-center relative overflow-hidden group">
          <div className="absolute inset-0 bg-gradient-to-r from-plex-orange/5 to-transparent opacity-100"></div>
          <div className="absolute inset-0 bg-plex-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
          <h3 className="text-xl font-display font-bold text-white mb-2 relative z-10">Did you find this awesome?</h3>
@@ -416,7 +412,8 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
       {selectedPick && (
         <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 pt-24 md:p-4">
            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedPick(null)}></div>
-           <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row overflow-hidden">
+           {/* Modal Container: On mobile, overflow-y-auto allows full card scrolling. On desktop, we clip to support split-pane scrolling. */}
+           <div className="relative z-10 bg-[#1F2326] w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto md:overflow-hidden rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row">
                <button onClick={() => setSelectedPick(null)} className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-white hover:text-black transition-colors">✕</button>
                <div className="w-full md:w-2/5 relative h-64 md:h-auto flex-shrink-0">
                  {selectedPick.item.thumb ? <img src={selectedPick.item.thumb} alt={selectedPick.item.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">No Poster</div>}
@@ -431,7 +428,8 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
                      {selectedPick.rottenTomatoesScore && <a href={getSearchUrl('rt', selectedPick.item.title)} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-[#fa320a] text-white rounded font-bold text-xs hover:brightness-110">RT {selectedPick.rottenTomatoesScore}</a>}
                      <span className="px-2 py-1 bg-plex-orange/20 text-plex-orange border border-plex-orange/20 rounded font-bold text-xs">{Math.round(selectedPick.score)}% Match</span>
                   </div>
-                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                  {/* Text Container: On mobile, let it grow naturally (no scroll). On desktop, constrain and scroll internally. */}
+                  <div className="md:flex-1 md:overflow-y-auto md:pr-2 custom-scrollbar">
                      <p className="text-plex-orange italic mb-4 text-sm font-medium">"{selectedPick.reason}"</p>
                      <p className="text-gray-300 text-sm leading-relaxed mb-6">{selectedPick.item.summary}</p>
                      <div className="flex flex-wrap gap-2 mb-6">
