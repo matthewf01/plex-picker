@@ -90,12 +90,11 @@ export const Results: React.FC<ResultsProps> = ({ recommendations, selection, on
     if (!serverIdentifier) return undefined;
     const encodedKey = encodeURIComponent(key);
     
-    // Mobile Strategy: Use 'plex://preplay' command
-    // The 'preplay' endpoint is specifically designed to navigate the native app 
-    // to the details screen of a specific item (metadataKey) on a specific server.
-    // This bypasses the generic home screen navigation issues seen with other schemes.
+    // Mobile Strategy: Use standard 'plex://server' details scheme
+    // The previous 'preplay' command proved unreliable on some devices.
+    // This format mirrors the web app structure but uses the custom protocol.
     if (isMobile) {
-        return `plex://preplay/?metadataKey=${encodedKey}&serverIdentifier=${serverIdentifier}`;
+        return `plex://server/${serverIdentifier}/details?key=${encodedKey}`;
     }
 
     // Desktop Strategy: Universal App Link
